@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://b1o61glif6eqo"]
+
+[ext_resource type="Script" path="res://addons/BuildingEditor/scripts/handle.gd" id="1_s7hji"]
+
+[node name="Handle" type="Marker3D"]
+script = ExtResource("1_s7hji")

@@ -1,0 +1,14 @@
+[remap]
+
+importer="buildingeditor.vertex_groups"
+type="VertexGroups"
+uid="uid://byw7fkswf30o7"
+path="res://.godot/imported/gps.vgps-92838bd428dcae59815ca0a493b19e0f.tres"
+
+[deps]
+
+source_file="res://assets/meshes/door_opening/gps.vgps"
+dest_files=["res://.godot/imported/gps.vgps-92838bd428dcae59815ca0a493b19e0f.tres"]
+
+[params]
+

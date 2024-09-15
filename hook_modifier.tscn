@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://4500qu0i532e"]
+
+[ext_resource type="Script" path="res://addons/BuildingEditor/scripts/hook_modifier.gd" id="1_lnlx8"]
+
+[node name="HookModifier" type="Node3D"]
+script = ExtResource("1_lnlx8")

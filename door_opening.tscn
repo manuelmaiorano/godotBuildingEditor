@@ -1,0 +1,91 @@
+[gd_scene load_steps=8 format=4 uid="uid://ddjipkkk83v35"]
+
+[ext_resource type="Material" uid="uid://btbm1m7w7os3u" path="res://assets/materials/Material.001.tres" id="1_qe2hs"]
+[ext_resource type="Script" path="res://addons/BuildingEditor/scripts/process_modifiers.gd" id="2_jcko6"]
+[ext_resource type="ArrayMesh" uid="uid://7psnkomnshcd" path="res://assets/meshes/door_opening/door.res" id="3_i0fww"]
+[ext_resource type="PackedScene" uid="uid://4500qu0i532e" path="res://hook_modifier.tscn" id="4_05h7l"]
+[ext_resource type="Resource" uid="uid://byw7fkswf30o7" path="res://assets/meshes/door_opening/gps.vgps" id="5_flpuo"]
+[ext_resource type="PackedScene" uid="uid://b1o61glif6eqo" path="res://handle.tscn" id="6_07y6o"]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_k5yug"]
+_surfaces = [{
+"aabb": AABB(0, 0, -2, 2, 2, 2),
+"attribute_data": PackedByteArray("oP8fPwD//z7A/r8+wP8/P8D+vz4AAIA/wP6/PgD//z6g/x8/AACAP6D/Hz8A/X8+wP6/PgD9fz6g/x8/wP8/P9cy1z70ZHQ/lGUUP/RkdD+UZRQ/zJlLP9cy1z7MmUs/1zLXPunK6D6UZRQ/6croPpRlFD+XMpc+1zLXPpcylz7XMtc+zJlLP9cy1z7MmUs/1zLXPunK6D7XMtc+6croPqD/Hz/A/z8/4P9fPwD//z7A/r8+wP8/P8D+vz7A/z8/wP6/PgD//z7A/r8+AP//PqD/Hz8A//8+oP8fPwD//z7A/r8+AAAAAMD+vz4AAIA/oP8fPwAAAADg/18/AP1/PqD/Hz8A/X8+oP8fPwD9fz7A/r8+AP1/PsD+vz4A/X8+lGUUP8yZSz+UZRQ/zJlLP5RlFD/pyug+lGUUP+nK6D7XMtc+9GR0P9cy1z70ZHQ/lGUUP/RkdD+UZRQ/9GR0P5RlFD+XMpc+lGUUP5cylz7XMtc+lzKXPtcy1z6XMpc+"),
+"format": 34359742487,
+"index_count": 84,
+"index_data": PackedByteArray("GwAfABUAGwAhAB8AIgAeACAAIgAcAB4AJgArACwAJgAkACsAEAAYABcAEAASABgAKAAtACoAKAAuAC0AFgAaABQAFgAZABoAHQAJAAQAHQApAAkABAAlAAcABAAJACUABwARAAEABwAlABEAIwAIAAIAIwAvAAgAAwAnAAAAAwATACcAAAAOAAUAAAAnAA4ABQAPAAYABQAOAA8ADAAKAA0ADAALAAoA"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 48,
+"vertex_data": PackedByteArray("AAAAQAAAAEAAAADAAAAAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAADAAAAAAAAAAEAAAAAAAAAAQAAAAEAAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAEAAAADAAAAAAAAAAAC4pLm+AAAAANKW0T+4pLm+AAAAANKW0T/Sl9G/AAAAAAAAAADSl9G/AAAAQAAAAADSl9G/AAAAQNKW0T/Sl9G/AAAAQNKW0T+4pLm+AAAAQAAAAAC4pLm+AAAAAAAAAADSl9G/AAAAAAAAAADSl9G/AAAAQAAAAADSl9G/AAAAQAAAAADSl9G/AAAAAAAAAEAAAADAAAAAAAAAAEAAAADAAAAAAAAAAAAAAADAAAAAAAAAAAAAAADAAAAAQAAAAAAAAADAAAAAQAAAAAAAAADAAAAAQAAAAEAAAADAAAAAQAAAAEAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAEAAAAAAAAAAQAAAAEAAAAAAAAAAQAAAAEAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAANKW0T/Sl9G/AAAAANKW0T/Sl9G/AAAAQNKW0T/Sl9G/AAAAQNKW0T/Sl9G/AAAAAAAAAAC4pLm+AAAAAAAAAAC4pLm+AAAAANKW0T+4pLm+AAAAANKW0T+4pLm+AAAAQNKW0T+4pLm+AAAAQNKW0T+4pLm+AAAAQAAAAAC4pLm+AAAAQAAAAAC4pLm++v8AgPt//78CAASA/X/+vwWAAwAGAP2/+v8AgPt//78CAASA/X/+v/r/AID7f/+/+v8AgPt//78CAASA/X/+vwKAAQADAP6/AgAEgP1//r//f/9//38AgP9//3//fwCA/3//f/9/AID/f/9//38AgPr/AID7f/+/+v8AgPt//78DgAAABAD+vwIABID9f/6/BIAGAAQA/L/6/wCA+3//v/7//v8BgACA/n/+/wAA/r/+//7/AYAAgAOAAAADAP+/AYAAAAIA/r/+//7/AYAAgP7//v8BgACA/n/+/wAA/r//f/9//38AgAIABID9f/6//3//f/9/AID+f/7/AAD+v/9//3//fwCA/n/+/wAA/r//f/9//38AgAKAAQACAP6/AoADAAIA/b8CAASA/X/+vwGAAQABAP6/+v8AgPt//7/+//7/AYAAgAIABID9f/6//v/+/wGAAIAAgAEAAQD+vwKABAACAPy//v/+/wGAAID+//7/AYAAgASABAAEAP2/")
+}]
+
+[node name="DoorOpening" type="MeshInstance3D"]
+material_override = ExtResource("1_qe2hs")
+mesh = SubResource("ArrayMesh_k5yug")
+script = ExtResource("2_jcko6")
+original_mesh = ExtResource("3_i0fww")
+
+[node name="height" parent="." node_paths=PackedStringArray("object") instance=ExtResource("4_05h7l")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0313044, 0)
+object = NodePath("Handle")
+vgroups = ExtResource("5_flpuo")
+vgroup_name = "h"
+
+[node name="Handle" parent="height" instance=ExtResource("6_07y6o")]
+
+[node name="length" parent="." node_paths=PackedStringArray("object") instance=ExtResource("4_05h7l")]
+object = NodePath("Handle")
+vgroups = ExtResource("5_flpuo")
+vgroup_name = "l"
+
+[node name="Handle" parent="length" instance=ExtResource("6_07y6o")]
+
+[node name="width" parent="." node_paths=PackedStringArray("object") instance=ExtResource("4_05h7l")]
+object = NodePath("Handle")
+vgroups = ExtResource("5_flpuo")
+vgroup_name = "w"
+
+[node name="Handle" parent="width" instance=ExtResource("6_07y6o")]
+
+[node name="c1" parent="." node_paths=PackedStringArray("object") instance=ExtResource("4_05h7l")]
+object = NodePath("Handle")
+vgroups = ExtResource("5_flpuo")
+vgroup_name = "c1"
+
+[node name="Handle" parent="c1" instance=ExtResource("6_07y6o")]
+
+[node name="c2" parent="." node_paths=PackedStringArray("object") instance=ExtResource("4_05h7l")]
+object = NodePath("Handle")
+vgroups = ExtResource("5_flpuo")
+vgroup_name = "c2"
+
+[node name="Handle" parent="c2" instance=ExtResource("6_07y6o")]
+
+[node name="doortop" parent="." node_paths=PackedStringArray("object") instance=ExtResource("4_05h7l")]
+object = NodePath("Handle")
+vgroups = ExtResource("5_flpuo")
+vgroup_name = "doortop"
+
+[node name="Handle" parent="doortop" instance=ExtResource("6_07y6o")]
+
+[node name="door1" parent="." node_paths=PackedStringArray("object") instance=ExtResource("4_05h7l")]
+object = NodePath("Handle")
+vgroups = ExtResource("5_flpuo")
+vgroup_name = "door1"
+
+[node name="Handle" parent="door1" instance=ExtResource("6_07y6o")]
+
+[node name="door2" parent="." node_paths=PackedStringArray("object") instance=ExtResource("4_05h7l")]
+object = NodePath("Handle")
+vgroups = ExtResource("5_flpuo")
+vgroup_name = "door2"
+
+[node name="Handle" parent="door2" instance=ExtResource("6_07y6o")]
+
+[node name="doorPos" parent="." node_paths=PackedStringArray("object") instance=ExtResource("4_05h7l")]
+object = NodePath("Handle")
+vgroups = ExtResource("5_flpuo")
+vgroup_name = "doorPos"
+
+[node name="Handle" parent="doorPos" instance=ExtResource("6_07y6o")]
