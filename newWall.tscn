@@ -1,0 +1,76 @@
+[gd_scene load_steps=12 format=4 uid="uid://b8l1241r2x3u0"]
+
+[ext_resource type="Material" uid="uid://btbm1m7w7os3u" path="res://assets/materials/Material.001.tres" id="1_u1q8c"]
+[ext_resource type="Script" path="res://addons/BuildingEditor/scripts/process_modifiers.gd" id="2_fvhe0"]
+[ext_resource type="ArrayMesh" uid="uid://4k4aqxy2gvyh" path="res://assets/meshes/cube_text/cube_txt.res" id="3_aj46g"]
+[ext_resource type="PackedScene" uid="uid://4500qu0i532e" path="res://hook_modifier.tscn" id="4_ntxxt"]
+[ext_resource type="Script" path="res://addons/BuildingEditor/scripts/resource_scripts/vg_resource.gd" id="5_2bov3"]
+[ext_resource type="Script" path="res://addons/BuildingEditor/scripts/resource_scripts/vgs_resource.gd" id="6_75qd6"]
+[ext_resource type="PackedScene" uid="uid://b1o61glif6eqo" path="res://handle.tscn" id="7_buty4"]
+[ext_resource type="Resource" uid="uid://bi7r4kk3raq7a" path="res://assets/meshes/cube/gps.vgps" id="8_0aigk"]
+
+[sub_resource type="ArrayMesh" id="ArrayMesh_3g8co"]
+_surfaces = [{
+"aabb": AABB(2, 0, -2, 1e-05, 2, 2),
+"attribute_data": PackedByteArray("AAAAAAAAAEAAAAAAAAAAAAAAAMAAAAAAAAAAwAAAAEA="),
+"format": 34359742487,
+"index_count": 6,
+"index_data": PackedByteArray("AgAAAAMAAgABAAAA"),
+"primitive": 3,
+"uv_scale": Vector4(0, 0, 0, 0),
+"vertex_count": 4,
+"vertex_data": PackedByteArray("AAAAQAAAAEAAAAAAAAAAQAAAAAAAAAAAAAAAQAAAAAAAAADAAAAAQAAAAEAAAADA+v8AgPt//7/6/wCA+3//v/r/AID7f/+/+v8AgPt//78=")
+}]
+
+[sub_resource type="Resource" id="Resource_oltnj"]
+script = ExtResource("5_2bov3")
+name = "h_in"
+indices = Array[int]([0, 1])
+
+[sub_resource type="Resource" id="Resource_84esb"]
+script = ExtResource("6_75qd6")
+groups = Array[ExtResource("5_2bov3")]([SubResource("Resource_oltnj")])
+
+[node name="Node3D" type="Node3D"]
+
+[node name="Wall" type="MeshInstance3D" parent="."]
+material_override = ExtResource("1_u1q8c")
+mesh = SubResource("ArrayMesh_3g8co")
+script = ExtResource("2_fvhe0")
+original_mesh = ExtResource("3_aj46g")
+
+[node name="height" parent="Wall" node_paths=PackedStringArray("object") instance=ExtResource("4_ntxxt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.0313044, 0)
+object = NodePath("Handle")
+vgroups = SubResource("Resource_84esb")
+vgroup_name = "h_in"
+
+[node name="Handle" parent="Wall/height" instance=ExtResource("7_buty4")]
+
+[node name="length" parent="Wall" node_paths=PackedStringArray("object") instance=ExtResource("4_ntxxt")]
+object = NodePath("Handle")
+vgroups = ExtResource("8_0aigk")
+vgroup_name = "l"
+
+[node name="Handle" parent="Wall/length" instance=ExtResource("7_buty4")]
+
+[node name="width" parent="Wall" node_paths=PackedStringArray("object") instance=ExtResource("4_ntxxt")]
+object = NodePath("Handle")
+vgroups = ExtResource("8_0aigk")
+vgroup_name = "w"
+
+[node name="Handle" parent="Wall/width" instance=ExtResource("7_buty4")]
+
+[node name="c1" parent="Wall" node_paths=PackedStringArray("object") instance=ExtResource("4_ntxxt")]
+object = NodePath("Handle")
+vgroups = ExtResource("8_0aigk")
+vgroup_name = "c1"
+
+[node name="Handle" parent="Wall/c1" instance=ExtResource("7_buty4")]
+
+[node name="c2" parent="Wall" node_paths=PackedStringArray("object") instance=ExtResource("4_ntxxt")]
+object = NodePath("Handle")
+vgroups = ExtResource("8_0aigk")
+vgroup_name = "c2"
+
+[node name="Handle" parent="Wall/c2" instance=ExtResource("7_buty4")]

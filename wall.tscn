@@ -7,7 +7,7 @@
 [ext_resource type="Resource" uid="uid://bi7r4kk3raq7a" path="res://assets/meshes/cube/gps.vgps" id="4_fvsfm"]
 [ext_resource type="PackedScene" uid="uid://b1o61glif6eqo" path="res://handle.tscn" id="5_2shrx"]
 
-[sub_resource type="ArrayMesh" id="ArrayMesh_vp472"]
+[sub_resource type="ArrayMesh" id="ArrayMesh_6ctpp"]
 _surfaces = [{
 "aabb": AABB(0, 0, -2, 2, 2, 2),
 "attribute_data": PackedByteArray("oP8fPwD//z7A/r8+AP//PqD/Hz8A/X8+wP6/PgD9fz6g/x8/wP8/P8D+vz7A/z8/oP8fPwAAgD8A+f89AP1/PsD+vz7A/z8/APn/PQD//z7A/r8+AACAP8D+vz4AAAAAwP6/PgD//z7A/r8+AP//PqD/Hz8A//8+oP8fPwD//z6g/x8/AAAAAOD/Xz8A/X8+oP8fPwD9fz6g/x8/AP1/PsD+vz4A/X8+wP6/PgD9fz6g/x8/wP8/P+D/Xz8A//8+"),
@@ -22,7 +22,7 @@ _surfaces = [{
 
 [node name="Wall" type="MeshInstance3D"]
 material_override = ExtResource("1_yft8a")
-mesh = SubResource("ArrayMesh_vp472")
+mesh = SubResource("ArrayMesh_6ctpp")
 script = ExtResource("1_io52y")
 original_mesh = ExtResource("2_wyabs")
 

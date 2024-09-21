@@ -20,22 +20,6 @@ bg_color = Color(0.4104, 0.55138, 0.57, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kh6b5"]
 bg_color = Color(0.41, 0.41, 0.41, 1)
 
-[sub_resource type="Animation" id="Animation_clxuo"]
-resource_name = "new_animation"
-length = 0.2
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:custom_minimum_size")
-tracks/0/interp = 2
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0, 0.2),
-"transitions": PackedFloat32Array(0.143587, 18.3792),
-"update": 0,
-"values": [Vector2(50, 50), Vector2(300, 50)]
-}
-
 [sub_resource type="Animation" id="Animation_l3dy1"]
 length = 0.001
 tracks/0/type = "value"
@@ -49,6 +33,23 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 0,
 "values": [Vector2(100, 50)]
+}
+
+[sub_resource type="Animation" id="Animation_clxuo"]
+resource_name = "new_animation"
+length = 0.2
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:custom_minimum_size")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(0.143587, 18.3792),
+"update": 0,
+"values": [Vector2(50, 50), Vector2(300, 50)]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_i20co"]
@@ -194,6 +195,7 @@ size_flags_vertical = 4
 libraries = {
 "": SubResource("AnimationLibrary_i20co")
 }
+autoplay = "new_animation"
 
 [node name="Button" type="Button" parent="VBoxContainer/Panel2/HFlowContainer"]
 layout_mode = 2

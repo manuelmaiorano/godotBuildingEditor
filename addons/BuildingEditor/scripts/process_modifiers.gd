@@ -9,10 +9,10 @@ class_name WallInstance
 @onready var uvs = PackedVector2Array()
 @onready var normals = PackedVector3Array()
 @onready var indices = PackedInt32Array()
-# Called when the node enters the scene tree for the first time.
 @onready var csgmesh = null
 
 func _ready() -> void:
+	
 	_on_reset()
 	for child in get_children():
 		if child.has_signal("modifier_update"):
