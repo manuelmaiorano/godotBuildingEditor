@@ -1,0 +1,275 @@
+[gd_scene load_steps=19 format=3 uid="uid://deof3eang16tt"]
+
+[ext_resource type="Texture2D" uid="uid://b4din0uy1vwe0" path="res://assets/icons/settings.svg" id="1_54rq4"]
+[ext_resource type="Texture2D" uid="uid://cr54sl8fr84x1" path="res://assets/icons/time.svg" id="2_chmh1"]
+[ext_resource type="Texture2D" uid="uid://d4hwo2ihunay5" path="res://assets/icons/user.svg" id="3_s0a76"]
+[ext_resource type="Texture2D" uid="uid://ckjfnx7ra1yni" path="res://assets/icons/placeholder.svg" id="4_g1vua"]
+[ext_resource type="Theme" uid="uid://buooiid821u0d" path="res://resources/control.tres" id="5_d16g6"]
+[ext_resource type="Texture2D" uid="uid://dx2pvfey63khc" path="res://assets/icons/close-button-svgrepo-com.svg" id="6_t4tl1"]
+[ext_resource type="PackedScene" uid="uid://dwhnnma5u16h3" path="res://control1.tscn" id="7_3pmgh"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_x3mlr"]
+bg_color = Color(0.4104, 0.55138, 0.57, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qcceb"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lvllr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_5b0ui"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kh6b5"]
+bg_color = Color(0.41, 0.41, 0.41, 1)
+
+[sub_resource type="Animation" id="Animation_clxuo"]
+resource_name = "new_animation"
+length = 0.2
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:custom_minimum_size")
+tracks/0/interp = 2
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(0.143587, 18.3792),
+"update": 0,
+"values": [Vector2(50, 50), Vector2(300, 50)]
+}
+
+[sub_resource type="Animation" id="Animation_l3dy1"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:custom_minimum_size")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(100, 50)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_i20co"]
+_data = {
+"RESET": SubResource("Animation_l3dy1"),
+"new_animation": SubResource("Animation_clxuo")
+}
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_km637"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_gysii"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3qi3t"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 0
+
+[node name="Panel" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_x3mlr")
+
+[node name="ItemList" type="VFlowContainer" parent="VBoxContainer/Panel"]
+texture_filter = 1
+layout_mode = 2
+size_flags_vertical = 3
+theme = ExtResource("5_d16g6")
+
+[node name="Button" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme = ExtResource("5_d16g6")
+icon = ExtResource("2_chmh1")
+
+[node name="Button2" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_qcceb")
+icon = ExtResource("3_s0a76")
+
+[node name="Button3" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lvllr")
+icon = ExtResource("1_54rq4")
+
+[node name="Button4" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_5b0ui")
+icon = ExtResource("4_g1vua")
+
+[node name="Button5" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme = ExtResource("5_d16g6")
+icon = ExtResource("2_chmh1")
+
+[node name="Button6" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_qcceb")
+icon = ExtResource("3_s0a76")
+
+[node name="Button7" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lvllr")
+icon = ExtResource("1_54rq4")
+
+[node name="Button8" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_5b0ui")
+icon = ExtResource("4_g1vua")
+
+[node name="Button9" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme = ExtResource("5_d16g6")
+icon = ExtResource("2_chmh1")
+
+[node name="Button10" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_qcceb")
+icon = ExtResource("3_s0a76")
+
+[node name="Button11" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lvllr")
+icon = ExtResource("1_54rq4")
+
+[node name="Button12" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_5b0ui")
+icon = ExtResource("4_g1vua")
+
+[node name="Button13" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme = ExtResource("5_d16g6")
+icon = ExtResource("2_chmh1")
+
+[node name="Button14" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_qcceb")
+icon = ExtResource("3_s0a76")
+
+[node name="Button15" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lvllr")
+icon = ExtResource("1_54rq4")
+
+[node name="Button16" type="Button" parent="VBoxContainer/Panel/ItemList"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_5b0ui")
+icon = ExtResource("4_g1vua")
+
+[node name="Panel2" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_kh6b5")
+
+[node name="HFlowContainer" type="HBoxContainer" parent="VBoxContainer/Panel2"]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.07
+theme = ExtResource("5_d16g6")
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/Panel2/HFlowContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 55
+
+[node name="TextEdit" type="TextEdit" parent="VBoxContainer/Panel2/HFlowContainer/MarginContainer"]
+custom_minimum_size = Vector2(100, 50)
+layout_mode = 2
+size_flags_vertical = 4
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="VBoxContainer/Panel2/HFlowContainer/MarginContainer/TextEdit"]
+libraries = {
+"": SubResource("AnimationLibrary_i20co")
+}
+
+[node name="Button" type="Button" parent="VBoxContainer/Panel2/HFlowContainer"]
+layout_mode = 2
+theme = ExtResource("5_d16g6")
+icon = ExtResource("2_chmh1")
+
+[node name="Button2" type="Button" parent="VBoxContainer/Panel2/HFlowContainer"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_qcceb")
+icon = ExtResource("3_s0a76")
+
+[node name="Button3" type="Button" parent="VBoxContainer/Panel2/HFlowContainer"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lvllr")
+icon = ExtResource("1_54rq4")
+
+[node name="Button4" type="Button" parent="VBoxContainer/Panel2/HFlowContainer"]
+layout_mode = 2
+theme_override_styles/normal = SubResource("StyleBoxEmpty_5b0ui")
+icon = ExtResource("4_g1vua")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+z_index = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 242.0
+offset_top = 65.0
+offset_right = -144.0
+offset_bottom = -104.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_km637")
+
+[node name="TabContainer" type="TabContainer" parent="PanelContainer"]
+layout_mode = 2
+current_tab = 0
+drag_to_rearrange_enabled = true
+
+[node name="PanelContainer" type="PanelContainer" parent="PanelContainer/TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="PanelContainer2" type="PanelContainer" parent="PanelContainer/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="PanelContainer3" type="PanelContainer" parent="PanelContainer/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="PanelContainer"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+theme = ExtResource("5_d16g6")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_gysii")
+
+[node name="Button" type="Button" parent="PanelContainer/PanelContainer"]
+layout_mode = 2
+icon = ExtResource("6_t4tl1")
+icon_alignment = 1
+
+[node name="PanelContainer2" type="PanelContainer" parent="."]
+z_index = 1
+layout_mode = 0
+anchor_left = 0.09375
+anchor_top = 0.0509259
+anchor_right = 0.78125
+anchor_bottom = 0.822531
+theme_override_styles/panel = SubResource("StyleBoxFlat_3qi3t")
+metadata/_edit_use_anchors_ = true
+
+[node name="VBoxContainer" parent="PanelContainer2" instance=ExtResource("7_3pmgh")]
+layout_mode = 2

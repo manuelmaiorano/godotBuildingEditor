@@ -102,9 +102,24 @@ func process_event(event, raycast_result):
 						var selected_object = raycast_result.collider
 						
 						if selected_object.get_parent() is WallInstance:
-							print(selected_object)
+							var wall_instance =  selected_object.get_parent()
 							var idx = wall_instances.find(selected_object.get_parent())
-							substitute_wall(idx)
+							#substitute_wall(idx)
+							var csgmesh = wall_instance.csgmesh
+							if wall_instance.csgmesh == null:
+								csgmesh = CSGMesh3D.new()
+								csgmesh.mesh = wall_instance.mesh
+								get_node("generated").add_child(csgmesh)
+								csgmesh.transform = wall_instance.transform
+								wall_instance.csgmesh = csgmesh
+								
+							var csgbox = CSGBox3D.new()
+							csgmesh.add_child(csgbox)
+							csgbox.operation = CSGShape3D.OPERATION_SUBTRACTION
+							csgbox.global_position = raycast_result.position
+							csgmesh.set_owner(self)
+							csgbox.set_owner(self)
+							wall_instance.hide()
 							return EditorPlugin.AFTER_GUI_INPUT_STOP
 						return EditorPlugin.AFTER_GUI_INPUT_PASS
 			
