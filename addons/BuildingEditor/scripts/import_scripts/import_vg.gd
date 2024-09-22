@@ -63,9 +63,10 @@ func _import(source_file, save_path, options, r_platform_variants, r_gen_files):
 		for idx in indices_str:
 			indices.append(int(idx))
 
-		
+		var splitted_name = name.split("/")
 		var vgroup = VertexGroup.new()
-		vgroup.name = name
+		vgroup.surf_name = splitted_name[0]
+		vgroup.name = splitted_name[1]
 		vgroup.indices = indices
 		vgroups.groups.append(vgroup)
 	print(vgroups)
