@@ -36,6 +36,7 @@ func gen_array_mesh():
 		surface_array[Mesh.ARRAY_NORMAL] = surf.normals
 		surface_array[Mesh.ARRAY_INDEX] =  surf.indices
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array)
+	update_collision()
 		
 func gen_border():
 	var dict = {"w": Vector3(width, 0, 0), 
@@ -94,4 +95,13 @@ func set_c1(c1):
 func set_c2(c2):
 	split_pts_in[split_pts_in.size()-1] = c2
 	gen_array_mesh()
+	
+func update_collision():
+	if get_children().size() == 0:
+		create_trimesh_collision()
+		return
+	get_child(0).free()
+	create_trimesh_collision()
+	
+	
 	

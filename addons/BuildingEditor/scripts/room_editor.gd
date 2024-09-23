@@ -5,8 +5,8 @@ class_name RoomEditor
 
 enum EDITOR_STATE {DRAW, DELETE, ADD_OPENING}
 
-@onready var points = []
-@onready var wall_instances = []
+@onready var points: Array[Vector3] = []
+@onready var wall_instances: Array[Wall] = []
 @onready var state: EDITOR_STATE = EDITOR_STATE.DRAW
 @onready var handle: PositionHandle = null
 
@@ -18,6 +18,8 @@ enum EDITOR_STATE {DRAW, DELETE, ADD_OPENING}
 @export var opening_height = 2
 @export var opening_width = 1.2
 @export var opening_scene: PackedScene
+
+var rooms: Array[Room]
 
 func _ready() -> void:
 	pass # Replace with function body.
@@ -36,6 +38,7 @@ func _on_reset():
 	$Handle.queue_free()
 	points = []
 	wall_instances = []
+	rooms = []
 	for child in get_node("generated").get_children():
 		child.queue_free()
 	
@@ -55,7 +58,6 @@ func process_event(event, raycast_result):
 		EDITOR_STATE.DRAW:
 			if event is InputEventKey:
 				if event.pressed and event.keycode == KEY_C:
-					print("ceiling")
 					var vertices = PackedVector3Array()
 					for point in points:
 						vertices.append(Vector3(point))
@@ -64,18 +66,32 @@ func process_event(event, raycast_result):
 					meshinstance.mesh = mesh
 					get_node("generated").add_child(meshinstance)
 					meshinstance.set_owner(self)
+					process_new_point(points[0])
+					var room = Room.new(points.slice(0, points.size()-2), wall_instances)
+					points.clear()
+					wall_instances.clear()
+					rooms.append(room)
 			if event is InputEventMouse:
 				if !raycast_result:
 					return EditorPlugin.AFTER_GUI_INPUT_PASS
 				var point = raycast_result.position
 				var snapped_point = snap_point(point)
-				snapped_point = point.snapped(Vector3.ONE * 0.5)
+				snapped_point = snapped_point.snapped(Vector3.ONE * 0.5)
 				
 				if event is InputEventMouseMotion:
 					update_gizmo(snapped_point)
 					return EditorPlugin.AFTER_GUI_INPUT_PASS
 				elif event is InputEventMouseButton and event.pressed:
 					if event.button_index == MOUSE_BUTTON_LEFT:
+						if raycast_result.collider.get_parent() is Wall:
+							var wall = raycast_result.collider.get_parent() 
+							#TODO: add split point check if inside or out
+							
+							if points.size() > 0:
+								var room = Room.new([], [])
+								points.clear()
+								rooms.append(room)
+								
 						process_new_point(handle.global_position)
 						return EditorPlugin.AFTER_GUI_INPUT_STOP
 		EDITOR_STATE.DELETE:
@@ -145,12 +161,9 @@ func process_new_point(point):
 		var wall_instance = wall_instances.back()
 		var length = points[points.size()-2].distance_to(points.back())
 		var angle = PI - (point - points.back()).signed_angle_to(points.back()-points[points.size()-2], Vector3.UP)
-		print(rad_to_deg(angle))
-		print(rad_to_deg(PI - angle))
 		var new_width = width/tan(angle/2)
 		if abs(angle) < 0.001:
 			new_width = 0
-		
 		
 		create_wall1(points.back(), point)
 		wall_instance.set_c2(new_width - length)
@@ -180,6 +193,16 @@ func create_wall1(pointA, pointB):
 	
 	wall_instance.global_position = pointA
 	wall_instances.append(wall_instance)
+	
+func get_new_room(pointA, pointB, wallA, wallB):
+	var roomA
+	var roomB
+	for room: Room in rooms:
+		if room.walls.has(wallA):
+			roomA = room
+		if room.walls.has(wallB):
+			roomB = room
+	
 	#
 #func create_wall(pointA, pointB):
 	#var wall_instance = preload("res://wall.tscn").instantiate()
