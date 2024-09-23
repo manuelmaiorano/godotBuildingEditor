@@ -1,0 +1,12 @@
+[gd_scene load_steps=5 format=3 uid="uid://cl8ju0w73fu8a"]
+
+[ext_resource type="Script" path="res://addons/BuildingEditor/scripts/objects/wall.gd" id="1_p0exc"]
+[ext_resource type="Resource" uid="uid://caxllh8o8tk6n" path="res://addons/BuildingEditor/resources/controllableMeshes/border.res" id="2_gl51e"]
+[ext_resource type="Resource" uid="uid://cxyl6bt21yl65" path="res://addons/BuildingEditor/resources/controllableMeshes/Inner.res" id="3_grkv6"]
+[ext_resource type="Resource" uid="uid://1827ugeoayr1" path="res://addons/BuildingEditor/resources/controllableMeshes/outer.res" id="4_myeay"]
+
+[node name="wall" type="MeshInstance3D"]
+script = ExtResource("1_p0exc")
+border_mesh = ExtResource("2_gl51e")
+wall_in_mesh = ExtResource("3_grkv6")
+wall_out_mesh = ExtResource("4_myeay")

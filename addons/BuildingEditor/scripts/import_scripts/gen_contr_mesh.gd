@@ -22,7 +22,8 @@ func _post_import(scene):
 func iterate(node: Node):
 	if node != null:
 		if node is MeshInstance3D:
-			var res_surf = ControllableSurf.new( node.mesh)
+			var res_surf = ControllableSurf.new()
+			res_surf.mesh = node.mesh
 			var vgs = VertexGroups.new()
 			print("  " + node.name)
 			for group in vgroups.groups:

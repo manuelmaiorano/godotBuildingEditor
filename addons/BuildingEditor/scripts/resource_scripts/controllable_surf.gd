@@ -1,3 +1,4 @@
+@tool
 extends  Resource
 class_name  ControllableSurf
 
@@ -5,20 +6,29 @@ class_name  ControllableSurf
 @export var vgroups: VertexGroups
 
 
-var verts = PackedVector3Array()
-var uvs = PackedVector2Array()
-var normals = PackedVector3Array()
-var indices = PackedInt32Array()
+@export var verts = PackedVector3Array()
+@export var uvs = PackedVector2Array()
+@export var normals = PackedVector3Array()
+@export var indices = PackedInt32Array()
+#
+#func _init(_mesh = null, _vgroups = null):
+	#mesh = _mesh   
+	#vgroups = _vgroups
+	#print("mesh")
+	#if mesh != null:
+		#verts = mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
+		#uvs = mesh.surface_get_arrays(0)[Mesh.ARRAY_TEX_UV]
+		#normals = mesh.surface_get_arrays(0)[Mesh.ARRAY_NORMAL]
+		#indices = mesh.surface_get_arrays(0)[Mesh.ARRAY_INDEX]
 
-func _init(_mesh = null, _vgroups = null) -> void:
-	mesh = _mesh
-	vgroups = _vgroups
+func initialize():
 	verts = mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]
 	uvs = mesh.surface_get_arrays(0)[Mesh.ARRAY_TEX_UV]
 	normals = mesh.surface_get_arrays(0)[Mesh.ARRAY_NORMAL]
 	indices = mesh.surface_get_arrays(0)[Mesh.ARRAY_INDEX]
+	return self
 	
-func get_new_surf(vgroup2pos: Dictionary):
+func gen_new_surf(vgroup2pos):
 	var new_surf = self.duplicate(true)
 	for vgroup in vgroup2pos:
 		var pos = vgroup2pos[vgroup]

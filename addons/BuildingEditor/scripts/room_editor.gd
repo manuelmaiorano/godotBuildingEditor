@@ -101,7 +101,7 @@ func process_event(event, raycast_result):
 						var point = raycast_result.position
 						var selected_object = raycast_result.collider
 						
-						if selected_object.get_parent() is WallInstance:
+						if selected_object.get_parent() is Wall:
 							var wall_instance =  selected_object.get_parent()
 							var idx = wall_instances.find(selected_object.get_parent())
 							#substitute_wall(idx)
@@ -152,13 +152,13 @@ func process_new_point(point):
 			new_width = 0
 		
 		
-		create_wall(points.back(), point)
-		wall_instance.get_node("c2/Handle").position.z = new_width - length
-		wall_instances.back().get_node("c1/Handle").position.z = -new_width
+		create_wall1(points.back(), point)
+		wall_instance.set_c2(new_width - length)
+		wall_instances.back().set_c1( -new_width)
 		points.append(point)
 		return
 	
-	create_wall(points.back(), point)
+	create_wall1(points.back(), point)
 	#create_marker(point)
 	points.append(point)
 
@@ -168,34 +168,47 @@ func create_marker(point):
 	handle_instance.set_owner(self)
 	handle_instance.global_position = point
 		
-func create_wall(pointA, pointB):
-	var wall_instance = preload("res://wall.tscn").instantiate()
+func create_wall1(pointA, pointB):
+	var wall_instance = Wall.new()
 	get_node("generated").add_child(wall_instance)
 	wall_instance.set_owner(self)
+	
 	wall_instance.transform = Transform3D().looking_at(pointB - pointA)
 	
-	wall_instance.get_node("height/Handle").position.y = height
-	wall_instance.get_node("length/Handle").position.z = -pointA.distance_to(pointB)
-	wall_instance.get_node("width/Handle").position.x = 0.2
-	
+	wall_instance.set_len(-pointA.distance_to(pointB))
+	wall_instance.set_width(0.2)
 	
 	wall_instance.global_position = pointA
 	wall_instances.append(wall_instance)
-	
-func substitute_wall(idx):
-	var wall_instance = wall_instances[idx]
-	var op_instance = preload("res://door_opening.tscn").instantiate()
-	get_node("generated").add_child(op_instance)
-	op_instance.set_owner(self)
-	op_instance.transform = wall_instance.transform
-	
-	op_instance.get_node("height/Handle").position.y = height
-	op_instance.get_node("length/Handle").position.z = wall_instance.get_node("length/Handle").position.z
-	op_instance.get_node("width/Handle").position.x = 0.2
-	op_instance.get_node("c2/Handle").position.z = wall_instance.get_node("c2/Handle").position.z
-	op_instance.get_node("c1/Handle").position.z = wall_instance.get_node("c1/Handle").position.z
-	wall_instances[idx] = op_instance
-	wall_instance.queue_free()
+	#
+#func create_wall(pointA, pointB):
+	#var wall_instance = preload("res://wall.tscn").instantiate()
+	#get_node("generated").add_child(wall_instance)
+	#wall_instance.set_owner(self)
+	#wall_instance.transform = Transform3D().looking_at(pointB - pointA)
+	#
+	#wall_instance.get_node("height/Handle").position.y = height
+	#wall_instance.get_node("length/Handle").position.z = -pointA.distance_to(pointB)
+	#wall_instance.get_node("width/Handle").position.x = 0.2
+	#
+	#
+	#wall_instance.global_position = pointA
+	#wall_instances.append(wall_instance)
+	#
+#func substitute_wall(idx):
+	#var wall_instance = wall_instances[idx]
+	#var op_instance = preload("res://door_opening.tscn").instantiate()
+	#get_node("generated").add_child(op_instance)
+	#op_instance.set_owner(self)
+	#op_instance.transform = wall_instance.transform
+	#
+	#op_instance.get_node("height/Handle").position.y = height
+	#op_instance.get_node("length/Handle").position.z = wall_instance.get_node("length/Handle").position.z
+	#op_instance.get_node("width/Handle").position.x = 0.2
+	#op_instance.get_node("c2/Handle").position.z = wall_instance.get_node("c2/Handle").position.z
+	#op_instance.get_node("c1/Handle").position.z = wall_instance.get_node("c1/Handle").position.z
+	#wall_instances[idx] = op_instance
+	#wall_instance.queue_free()
 	
 	
 	
