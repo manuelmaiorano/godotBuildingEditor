@@ -69,7 +69,7 @@ func add_split_len(pt, out = false):
 		arr = split_pts_out
 		
 	for idx in arr.size():
-		if arr[idx] < len:
+		if arr[idx] < pt:
 			arr.insert(idx, pt)
 			break
 	gen_array_mesh()

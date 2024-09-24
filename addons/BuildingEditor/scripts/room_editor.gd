@@ -20,6 +20,7 @@ enum EDITOR_STATE {DRAW, DELETE, ADD_OPENING}
 @export var opening_scene: PackedScene
 
 var rooms: Array[Room]
+var first_wall_coll: Wall = null
 
 func _ready() -> void:
 	pass # Replace with function body.
@@ -84,13 +85,30 @@ func process_event(event, raycast_result):
 				elif event is InputEventMouseButton and event.pressed:
 					if event.button_index == MOUSE_BUTTON_LEFT:
 						if raycast_result.collider.get_parent() is Wall:
-							var wall = raycast_result.collider.get_parent() 
+							var wall: Wall = raycast_result.collider.get_parent() 
 							#TODO: add split point check if inside or out
+							var tr = wall.transform
+							var rayc_in_tr = tr.inverse() * raycast_result.position
+							snapped_point.y = tr.origin.y
+							var point_in_tr = tr.inverse() * snapped_point
+							point_in_tr.x = rayc_in_tr.x
 							
+							snapped_point = tr * point_in_tr
+							update_gizmo(snapped_point)
+							var len = point_in_tr.z
+							var out = rayc_in_tr.x < wall.width/2
+							print(point_in_tr)
+							print(len)
+							print(out)
+							wall.add_split_len(len, out)
 							if points.size() > 0:
-								var room = Room.new([], [])
+								process_new_point(handle.global_position)
+								var room = get_new_room(points[0], snapped_point, first_wall_coll, wall, points, wall_instances)
 								points.clear()
-								rooms.append(room)
+								wall_instances.clear()
+								#rooms.append(room)
+								return EditorPlugin.AFTER_GUI_INPUT_STOP
+							first_wall_coll = wall
 								
 						process_new_point(handle.global_position)
 						return EditorPlugin.AFTER_GUI_INPUT_STOP
@@ -189,19 +207,20 @@ func create_wall1(pointA, pointB):
 	wall_instance.transform = Transform3D().looking_at(pointB - pointA)
 	
 	wall_instance.set_len(-pointA.distance_to(pointB))
-	wall_instance.set_width(0.2)
+	wall_instance.set_width(width)
 	
 	wall_instance.global_position = pointA
 	wall_instances.append(wall_instance)
 	
-func get_new_room(pointA, pointB, wallA, wallB):
-	var roomA
-	var roomB
+func get_new_room(pointA: Vector3, pointB: Vector3, wallA: Wall, wallB: Wall, points: Array[Vector3], walls: Array[Wall]):
+	var roomA: Room = null
+	var roomB: Room = null
 	for room: Room in rooms:
 		if room.walls.has(wallA):
 			roomA = room
 		if room.walls.has(wallB):
 			roomB = room
+	
 	
 	#
 #func create_wall(pointA, pointB):
