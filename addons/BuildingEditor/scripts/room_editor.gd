@@ -69,9 +69,18 @@ func process_event(event, raycast_result):
 					meshinstance.set_owner(self)
 					process_new_point(points[0])
 					var room = Room.new(points.slice(0, points.size()-2), wall_instances)
+					
+					#wall connections
+					wall_instances.back().add_wall_connection(wall_instances[wall_instances.size()-2])
+					wall_instances[wall_instances.size()-2].add_wall_connection(wall_instances.back())
+					wall_instances.back().add_wall_connection(wall_instances[0])
+					wall_instances[0].add_wall_connection(wall_instances.back())
+					
+					
 					points.clear()
 					wall_instances.clear()
 					rooms.append(room)
+					get_rooms()
 			if event is InputEventMouse:
 				if !raycast_result:
 					return EditorPlugin.AFTER_GUI_INPUT_PASS
@@ -86,7 +95,7 @@ func process_event(event, raycast_result):
 					if event.button_index == MOUSE_BUTTON_LEFT:
 						if raycast_result.collider.get_parent() is Wall:
 							var wall: Wall = raycast_result.collider.get_parent() 
-							#TODO: add split point check if inside or out
+
 							var tr = wall.transform
 							var rayc_in_tr = tr.inverse() * raycast_result.position
 							snapped_point.y = tr.origin.y
@@ -97,20 +106,33 @@ func process_event(event, raycast_result):
 							update_gizmo(snapped_point)
 							var len = point_in_tr.z
 							var out = rayc_in_tr.x < wall.width/2
-							print(point_in_tr)
-							print(len)
-							print(out)
+							
 							wall.add_split_len(len, out)
 							if points.size() > 0:
 								process_new_point(handle.global_position)
-								var room = get_new_room(points[0], snapped_point, first_wall_coll, wall, points, wall_instances)
+								#var room = get_new_room(points[0], snapped_point, first_wall_coll, wall, points, wall_instances)
+								
+								wall_instances.back().add_wall_connection(wall)
+								wall.add_wall_connection(wall_instances.back())
+								wall_instances.back().add_wall_connection(wall_instances[wall_instances.size()-2])
+								wall_instances[wall_instances.size()-2].add_wall_connection(wall_instances.back())
+								
 								points.clear()
 								wall_instances.clear()
+								get_rooms()
 								#rooms.append(room)
 								return EditorPlugin.AFTER_GUI_INPUT_STOP
-							first_wall_coll = wall
+							else:
+								
+								first_wall_coll = wall
+								process_new_point(handle.global_position)
+								wall_instances.append(wall)
+								return EditorPlugin.AFTER_GUI_INPUT_STOP
 								
 						process_new_point(handle.global_position)
+						if wall_instances.size() >= 2:
+							wall_instances.back().add_wall_connection(wall_instances[wall_instances.size()-2])
+							wall_instances[wall_instances.size()-2].add_wall_connection(wall_instances.back())
 						return EditorPlugin.AFTER_GUI_INPUT_STOP
 		EDITOR_STATE.DELETE:
 			if event is InputEventMouse:
@@ -221,36 +243,60 @@ func get_new_room(pointA: Vector3, pointB: Vector3, wallA: Wall, wallB: Wall, po
 		if room.walls.has(wallB):
 			roomB = room
 	
+func get_rooms():
+	var graph = {}
+	var all_points = []
+	for elem in get_node("generated").get_children():
+		if not elem is Wall:
+			continue
+		if graph.has(elem):
+			continue
+		graph[elem] = []
+		for neigh in elem.wall_connected:
+			graph[elem].append(neigh.wall)
+			all_points.append(neigh.interc_point)
+	var cycles = GRAPH_UTILS.find_cycles(graph)
+	print("PTS")
+	print(graph)
+	print("C")
+	print(cycles)
+	var point_sets = []
 	
-	#
-#func create_wall(pointA, pointB):
-	#var wall_instance = preload("res://wall.tscn").instantiate()
-	#get_node("generated").add_child(wall_instance)
-	#wall_instance.set_owner(self)
-	#wall_instance.transform = Transform3D().looking_at(pointB - pointA)
-	#
-	#wall_instance.get_node("height/Handle").position.y = height
-	#wall_instance.get_node("length/Handle").position.z = -pointA.distance_to(pointB)
-	#wall_instance.get_node("width/Handle").position.x = 0.2
-	#
-	#
-	#wall_instance.global_position = pointA
-	#wall_instances.append(wall_instance)
-	#
-#func substitute_wall(idx):
-	#var wall_instance = wall_instances[idx]
-	#var op_instance = preload("res://door_opening.tscn").instantiate()
-	#get_node("generated").add_child(op_instance)
-	#op_instance.set_owner(self)
-	#op_instance.transform = wall_instance.transform
-	#
-	#op_instance.get_node("height/Handle").position.y = height
-	#op_instance.get_node("length/Handle").position.z = wall_instance.get_node("length/Handle").position.z
-	#op_instance.get_node("width/Handle").position.x = 0.2
-	#op_instance.get_node("c2/Handle").position.z = wall_instance.get_node("c2/Handle").position.z
-	#op_instance.get_node("c1/Handle").position.z = wall_instance.get_node("c1/Handle").position.z
-	#wall_instances[idx] = op_instance
-	#wall_instance.queue_free()
+	for cycle in cycles:
+		var point_set = []
+		for idx in cycle.size():
+			var wall1 = cycle[idx]
+			var wall2 = cycle[(idx+1) % cycle.size()]
+			for conn in wall1.wall_connected:
+				if conn.wall == wall2:
+					
+					point_set.append(conn.interc_point)
+					break
+					
+		point_sets.append(point_set)
+	
+	var filtered_point_sets = []
+	for point_set in point_sets:
+		var polygon = []
+		for pt in point_set:
+			polygon.append(Vector2(pt.x, pt.z))
+		var skip = false
+		for point in all_points:
+			if GEOMETRY_UTILS.is_point_in_polygon(Vector2(point.x, point.z), polygon):
+				print(Vector2(point.x, point.z))
+				print("inside")
+				print(polygon)
+				skip = true
+				break
+		if skip:
+			continue
+				
+		filtered_point_sets.append(point_set)
+				
+	print(all_points)
+	print(point_sets)
+	print(filtered_point_sets)
+		
 	
 	
 	

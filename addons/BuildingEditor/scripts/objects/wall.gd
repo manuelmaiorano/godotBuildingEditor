@@ -2,6 +2,9 @@
 extends MeshInstance3D
 class_name Wall
 
+class WallConnection:
+	var wall: Wall
+	var interc_point: Vector3
 
 @export var border_mesh: ControllableSurf
 @export var wall_in_mesh: ControllableSurf
@@ -14,6 +17,8 @@ var width = 0.2
 var height = 2.4
 
 var csgmesh = null
+
+var wall_connected: Array[WallConnection]
 
 func _init() -> void:
 	split_pts_in = [0, 1]
@@ -72,7 +77,46 @@ func add_split_len(pt, out = false):
 		if arr[idx] < pt:
 			arr.insert(idx, pt)
 			break
+			
 	gen_array_mesh()
+	
+func add_wall_connection(wall: Wall):
+	var conn = WallConnection.new()
+	conn.wall = wall
+	
+	var strt = get_start_pt()
+	var end = get_end_pt()
+	
+	var x1 = strt.x
+	var y1 = strt.z
+	
+	var x2 = end.x
+	var y2 = end.z
+	
+	strt = wall.get_start_pt()
+	end = wall.get_end_pt()
+	
+	var x3 = strt.x
+	var y3 = strt.z
+	
+	var x4 = end.x
+	var y4 = end.z
+	
+	var det = (x1-x2)*(y3-y4)-(y1-y2)*(x3-x4)
+	var px = ( (x1*y2 -y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4) )/det
+	var py = ( (x1*y2 -y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4) )/det
+	
+	conn.interc_point = Vector3(px, transform.origin.y, py)
+	
+	wall_connected.append(conn)
+
+func get_start_pt():
+	var vec = Vector3(0, 0, split_pts_out.back())
+	return transform * vec
+
+func get_end_pt():
+	var vec = Vector3(0, 0, 0)
+	return transform * vec
 
 func set_len(len):
 	split_pts_in[split_pts_in.size()-1] = len
