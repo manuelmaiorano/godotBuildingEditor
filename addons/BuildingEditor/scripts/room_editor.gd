@@ -59,16 +59,9 @@ func process_event(event, raycast_result):
 		EDITOR_STATE.DRAW:
 			if event is InputEventKey:
 				if event.pressed and event.keycode == KEY_C:
-					var vertices = PackedVector3Array()
-					for point in points:
-						vertices.append(Vector3(point))
-					var mesh = CeilingCreator.create_from_vertices(vertices)
-					var meshinstance = MeshInstance3D.new()
-					meshinstance.mesh = mesh
-					get_node("generated").add_child(meshinstance)
-					meshinstance.set_owner(self)
+					create_floor(points)
 					process_new_point(points[0])
-					var room = Room.new(points.slice(0, points.size()-2), wall_instances)
+					#var room = Room.new(points.slice(0, points.size()-2), wall_instances)
 					
 					#wall connections
 					wall_instances.back().add_wall_connection(wall_instances[wall_instances.size()-2])
@@ -79,7 +72,7 @@ func process_event(event, raycast_result):
 					
 					points.clear()
 					wall_instances.clear()
-					rooms.append(room)
+					#rooms.append(room)
 					get_rooms()
 			if event is InputEventMouse:
 				if !raycast_result:
@@ -119,7 +112,16 @@ func process_event(event, raycast_result):
 								
 								points.clear()
 								wall_instances.clear()
-								get_rooms()
+								var cycles = get_rooms()
+								get_tree().call_group("floors", "queue_free")
+								for cycle in cycles:
+									var polygon: Array[Vector2] = []
+									for pt in cycle:
+										polygon.append(Vector2(pt.x, pt.z))
+									
+									if GEOMETRY_UTILS.isClockwise(polygon):
+										cycle.reverse()
+									create_floor(cycle)
 								#rooms.append(room)
 								return EditorPlugin.AFTER_GUI_INPUT_STOP
 							else:
@@ -233,15 +235,19 @@ func create_wall1(pointA, pointB):
 	
 	wall_instance.global_position = pointA
 	wall_instances.append(wall_instance)
+
+func create_floor(points):
+	var vertices = PackedVector3Array()
+	for point in points:
+		vertices.append(Vector3(point))
+	var mesh = CeilingCreator.create_from_vertices(vertices)
+	var meshinstance = MeshInstance3D.new()
+	meshinstance.mesh = mesh
+	get_node("generated").add_child(meshinstance)
+	meshinstance.set_owner(self)
+	meshinstance.add_to_group("floors")
 	
-func get_new_room(pointA: Vector3, pointB: Vector3, wallA: Wall, wallB: Wall, points: Array[Vector3], walls: Array[Wall]):
-	var roomA: Room = null
-	var roomB: Room = null
-	for room: Room in rooms:
-		if room.walls.has(wallA):
-			roomA = room
-		if room.walls.has(wallB):
-			roomB = room
+
 	
 func get_rooms():
 	var graph = {}
@@ -256,10 +262,10 @@ func get_rooms():
 			graph[elem].append(neigh.wall)
 			all_points.append(neigh.interc_point)
 	var cycles = GRAPH_UTILS.find_cycles(graph)
-	print("PTS")
-	print(graph)
-	print("C")
-	print(cycles)
+	#print("PTS")
+	#print(graph)
+	#print("C")
+	#print(cycles)
 	var point_sets = []
 	
 	for cycle in cycles:
@@ -293,9 +299,12 @@ func get_rooms():
 				
 		filtered_point_sets.append(point_set)
 				
-	print(all_points)
-	print(point_sets)
+	print("filtered")
 	print(filtered_point_sets)
+	print(point_sets.size())
+	print(filtered_point_sets.size())
+
+	return filtered_point_sets
 		
 	
 	

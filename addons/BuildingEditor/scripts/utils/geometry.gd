@@ -15,7 +15,11 @@ static func is_point_in_polygon(point: Vector2, polygon: Array) -> bool:
 		# Check if the point is exactly on the edge of the polygon
 		if point.is_equal_approx(p1):
 			return false  # Point is exactly a vertex of the polygon
+		
 		#TODO: return false if exaxtly on edge
+		if isBetween(point, p1, p2):
+			return false
+		
 		# Check if the ray intersects the edge of the polygon
 		if ((point.y > min(p1.y, p2.y)) and (point.y <= max(p1.y, p2.y)) and
 			(point.x <= max(p1.x, p2.x)) and (p1.y != p2.y)):
@@ -28,6 +32,22 @@ static func is_point_in_polygon(point: Vector2, polygon: Array) -> bool:
 
 	# If the number of intersections is odd, the point is inside
 	return (intersections % 2 != 0)
+
+static func isBetween(point: Vector2, p1: Vector2, p2: Vector2):
+	if is_equal_approx(point.distance_to(p1) + point.distance_to(p2), p1.distance_to(p2)):
+		return true
+
+	return false
+
+static func isClockwise(points: Array[Vector2]):
+	var sum = 0
+	for idx in points.size():
+		var p1 = points[idx]
+		var p2 = points[(idx+1)%points.size()]
+
+		sum += (p2.x -p1.x)*(p1.y + p2.y)
+
+	return sum > 0
 
 # Example usage
 func _run():
