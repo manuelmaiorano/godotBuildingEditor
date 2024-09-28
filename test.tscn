@@ -1,25 +1,17 @@
-[gd_scene load_steps=5 format=3 uid="uid://vbgylgxm2qvq"]
+[gd_scene load_steps=3 format=3 uid="uid://vbgylgxm2qvq"]
 
 [ext_resource type="Script" path="res://addons/BuildingEditor/scripts/room_editor.gd" id="1_pqaas"]
-[ext_resource type="PackedScene" uid="uid://b1o61glif6eqo" path="res://handle.tscn" id="2_fo4ge"]
-[ext_resource type="Script" path="res://addons/BuildingEditor/scripts/handle.gd" id="3_yv3ce"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qd7s4"]
 size = Vector3(15, 0.369629, 20.2343)
 
 [node name="Node3D" type="StaticBody3D"]
 script = ExtResource("1_pqaas")
-opening_height = null
-opening_width = null
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.82769, -0.0329196, 4.72309)
 shape = SubResource("BoxShape3D_qd7s4")
 
 [node name="generated" type="Node3D" parent="."]
-
-[node name="Handle" type="Marker3D" parent="." instance=ExtResource("2_fo4ge")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 8.5)
-script = ExtResource("3_yv3ce")
 
 [connection signal="input_event" from="." to="." method="_on_input_event"]

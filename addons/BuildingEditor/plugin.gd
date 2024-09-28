@@ -26,8 +26,17 @@ func _enter_tree() -> void:
 	menu.get_node("DelBtn").toggled.connect( \
 		func(pressed): _on_btn_press(RoomEditor.EDITOR_STATE.DELETE, pressed))
 	
+	menu.get_node("ContinueBtn").toggled.connect( \
+		func(pressed): _on_btn_press(RoomEditor.EDITOR_STATE.CONTINUE, pressed))
+	
 	menu.get_node("OpeningBtn").toggled.connect( \
 		func(pressed): _on_btn_press(RoomEditor.EDITOR_STATE.ADD_OPENING, pressed))
+		
+	menu.get_node("PaintBtn").toggled.connect( \
+		func(pressed): _on_btn_press(RoomEditor.EDITOR_STATE.PAINT, pressed))
+		
+	menu.get_node("DecorationBtn").toggled.connect( \
+		func(pressed): _on_btn_press(RoomEditor.EDITOR_STATE.DECORATION, pressed))
 
 	add_control_to_container( \
 		EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, menu)

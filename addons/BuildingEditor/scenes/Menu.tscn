@@ -21,14 +21,26 @@ toggle_mode = true
 button_group = ExtResource("1_f3d0w")
 text = "Delete"
 
-[node name="MoveBtn" type="Button" parent="."]
+[node name="ContinueBtn" type="Button" parent="."]
 layout_mode = 2
 toggle_mode = true
 button_group = ExtResource("1_f3d0w")
-text = "Move"
+text = "Continue"
 
 [node name="OpeningBtn" type="Button" parent="."]
 layout_mode = 2
 toggle_mode = true
 button_group = ExtResource("1_f3d0w")
 text = "Add Opening"
+
+[node name="PaintBtn" type="Button" parent="."]
+layout_mode = 2
+toggle_mode = true
+button_group = ExtResource("1_f3d0w")
+text = "Paint"
+
+[node name="DecorationBtn" type="Button" parent="."]
+layout_mode = 2
+toggle_mode = true
+button_group = ExtResource("1_f3d0w")
+text = "Decoration"

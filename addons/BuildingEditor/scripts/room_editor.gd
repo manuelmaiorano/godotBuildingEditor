@@ -3,7 +3,7 @@ extends Node3D
 class_name RoomEditor
 
 
-enum EDITOR_STATE {DRAW, DELETE, ADD_OPENING}
+enum EDITOR_STATE {DRAW, DELETE, CONTINUE, ADD_OPENING, PAINT, DECORATION}
 
 @onready var points: Array[Vector3] = []
 @onready var wall_instances: Array[Wall] = []
@@ -15,16 +15,10 @@ enum EDITOR_STATE {DRAW, DELETE, ADD_OPENING}
 @export var height = 2.4
 @export var width = 0.2
 
-@export var opening_height = 2
-@export var opening_width = 1.2
-@export var opening_scene: PackedScene
+@export var snap_amount = 0.5
 
 var rooms: Array[Room]
-var first_wall_coll: Wall = null
 
-func _ready() -> void:
-	pass # Replace with function body.
-	
 func set_state(new_state: EDITOR_STATE):
 	state = new_state
 
@@ -43,16 +37,39 @@ func _on_reset():
 	for child in get_node("generated").get_children():
 		child.queue_free()
 	
-func snap_point(point):
-	if points.size() == 0:
-		return point
+func snap_point(point, snap_to_axis, snap_to_grid):
 	var snapped_point = Vector3(point)
-	var rel_point = point - points.back()
-	if abs(rel_point.x) < abs(rel_point.z):
-		snapped_point.x = points.back().x
-	else:
-		snapped_point.z = points.back().z
+	if snap_to_axis and points.size() > 0:
+		var rel_point = point - points.back()
+		if abs(rel_point.x) < abs(rel_point.z):
+			snapped_point.x = points.back().x
+		else:
+			snapped_point.z = points.back().z
+	if snap_to_grid:
+		snapped_point = snapped_point.snapped(Vector3.ONE * snap_amount)
 	return snapped_point
+
+func connect_walls(wall1, wall2):
+	wall1.add_wall_connection(wall2)
+	wall2.add_wall_connection(wall1)
+
+class WallIntercData:
+	var len_along_wall: float
+	var is_side_out: bool
+	var point_at_bottom: Vector3
+
+
+func get_wall_interc_data(wall, raycast_pos):
+	var data = WallIntercData.new()
+
+	var tr = wall.transform
+	var rayc_in_tr = tr.inverse() * raycast_pos
+	
+	data.point_at_bottom = Vector3(raycast_pos.x, tr.origin.y, raycast_pos.z)
+	data.len_along_wall = rayc_in_tr.z
+	data.is_side_out = rayc_in_tr.x < wall.width/2
+	return data
+	
 
 func process_event(event, raycast_result):
 	match  state:
@@ -61,15 +78,11 @@ func process_event(event, raycast_result):
 				if event.pressed and event.keycode == KEY_C:
 					create_floor(points)
 					process_new_point(points[0])
-					#var room = Room.new(points.slice(0, points.size()-2), wall_instances)
 					
 					#wall connections
-					wall_instances.back().add_wall_connection(wall_instances[wall_instances.size()-2])
-					wall_instances[wall_instances.size()-2].add_wall_connection(wall_instances.back())
-					wall_instances.back().add_wall_connection(wall_instances[0])
-					wall_instances[0].add_wall_connection(wall_instances.back())
-					
-					
+					connect_walls(wall_instances.back(), wall_instances[wall_instances.size()-2])
+					connect_walls(wall_instances.back(), wall_instances[0])
+
 					points.clear()
 					wall_instances.clear()
 					#rooms.append(room)
@@ -78,76 +91,56 @@ func process_event(event, raycast_result):
 				if !raycast_result:
 					return EditorPlugin.AFTER_GUI_INPUT_PASS
 				var point = raycast_result.position
-				var snapped_point = snap_point(point)
-				snapped_point = snapped_point.snapped(Vector3.ONE * 0.5)
+				var snapped_point = snap_point(point, true, true)
 				
 				if event is InputEventMouseMotion:
 					update_gizmo(snapped_point)
 					return EditorPlugin.AFTER_GUI_INPUT_PASS
 				elif event is InputEventMouseButton and event.pressed:
 					if event.button_index == MOUSE_BUTTON_LEFT:
-						if raycast_result.collider.get_parent() is Wall:
-							var wall: Wall = raycast_result.collider.get_parent() 
+						var coll_parent = raycast_result.collider.get_parent()
+						if coll_parent is Wall:
+							var wall: Wall = coll_parent
 
-							var tr = wall.transform
-							var rayc_in_tr = tr.inverse() * raycast_result.position
-							snapped_point.y = tr.origin.y
-							var point_in_tr = tr.inverse() * snapped_point
-							point_in_tr.x = rayc_in_tr.x
+							var data: WallIntercData = get_wall_interc_data(coll_parent, snap_point(raycast_result.position, true, true))
+							update_gizmo(data.point_at_bottom)
 							
-							snapped_point = tr * point_in_tr
-							update_gizmo(snapped_point)
-							var len = point_in_tr.z
-							var out = rayc_in_tr.x < wall.width/2
-							
-							wall.add_split_len(len, out)
+							wall.add_split_len(data.len_along_wall, data.is_side_out)
 							if points.size() > 0:
 								process_new_point(handle.global_position)
-								#var room = get_new_room(points[0], snapped_point, first_wall_coll, wall, points, wall_instances)
 								
-								wall_instances.back().add_wall_connection(wall)
-								wall.add_wall_connection(wall_instances.back())
-								wall_instances.back().add_wall_connection(wall_instances[wall_instances.size()-2])
-								wall_instances[wall_instances.size()-2].add_wall_connection(wall_instances.back())
+								#connect walls
+								connect_walls(wall_instances.back(), wall_instances[wall_instances.size()-2])
+								connect_walls(wall_instances.back(), wall)
 								
 								points.clear()
 								wall_instances.clear()
-								var cycles = get_rooms()
-								get_tree().call_group("floors", "queue_free")
-								for cycle in cycles:
-									var polygon: Array[Vector2] = []
-									for pt in cycle:
-										polygon.append(Vector2(pt.x, pt.z))
-									
-									if GEOMETRY_UTILS.isClockwise(polygon):
-										cycle.reverse()
-									create_floor(cycle)
-								#rooms.append(room)
+
+								create_floors()
 								return EditorPlugin.AFTER_GUI_INPUT_STOP
 							else:
-								
-								first_wall_coll = wall
 								process_new_point(handle.global_position)
 								wall_instances.append(wall)
 								return EditorPlugin.AFTER_GUI_INPUT_STOP
 								
 						process_new_point(handle.global_position)
 						if wall_instances.size() >= 2:
-							wall_instances.back().add_wall_connection(wall_instances[wall_instances.size()-2])
-							wall_instances[wall_instances.size()-2].add_wall_connection(wall_instances.back())
+							connect_walls(wall_instances.back(), wall_instances[wall_instances.size()-2])
 						return EditorPlugin.AFTER_GUI_INPUT_STOP
 		EDITOR_STATE.DELETE:
 			if event is InputEventMouse:
-				if !raycast_result:
-					return EditorPlugin.AFTER_GUI_INPUT_PASS
-				
-				var point = raycast_result.position
-				var selected_object = raycast_result.collider
-				
-				if selected_object is WallInstance:
-					wall_instances.erase(selected_object)
-					return EditorPlugin.AFTER_GUI_INPUT_STOP
-				return EditorPlugin.AFTER_GUI_INPUT_PASS
+				if event is InputEventMouseButton and event.pressed:
+					if event.button_index == MOUSE_BUTTON_LEFT:
+						if !raycast_result:
+							return EditorPlugin.AFTER_GUI_INPUT_PASS
+						
+						var coll_parent = raycast_result.collider.get_parent()
+						if coll_parent is Wall:
+							delete_wall_connection(coll_parent)
+							create_floors()
+							coll_parent.free()
+							return EditorPlugin.AFTER_GUI_INPUT_STOP
+						return EditorPlugin.AFTER_GUI_INPUT_PASS
 		
 		EDITOR_STATE.ADD_OPENING:
 			if event is InputEventMouse:
@@ -246,12 +239,25 @@ func create_floor(points):
 	get_node("generated").add_child(meshinstance)
 	meshinstance.set_owner(self)
 	meshinstance.add_to_group("floors")
-	
 
+func create_floors():
+	var cycles = get_rooms()
+	get_tree().call_group("floors", "free")
+	for cycle in cycles:
+		var polygon: Array[Vector2] = []
+		for pt in cycle:
+			polygon.append(Vector2(pt.x, pt.z))
+		
+		if GEOMETRY_UTILS.isClockwise(polygon):
+			cycle.reverse()
+		create_floor(cycle)
+	
+	print("Number of Rooms: %d" % get_tree().get_nodes_in_group("floors").size())
 	
 func get_rooms():
 	var graph = {}
 	var all_points = []
+	
 	for elem in get_node("generated").get_children():
 		if not elem is Wall:
 			continue
@@ -266,8 +272,8 @@ func get_rooms():
 	#print(graph)
 	#print("C")
 	#print(cycles)
+
 	var point_sets = []
-	
 	for cycle in cycles:
 		var point_set = []
 		for idx in cycle.size():
@@ -298,14 +304,83 @@ func get_rooms():
 			continue
 				
 		filtered_point_sets.append(point_set)
+
+	var connected_pts = {}
+	for point_set in filtered_point_sets:
+		for idx in point_set.size():
+			var p1 = point_set[idx]
+			var p2 = point_set[(idx+1)%point_set.size()]
+			if !connected_pts.has(p1):
+				connected_pts[p1] = []
+			connected_pts[p1].append(p2)
+			if !connected_pts.has(p2):
+				connected_pts[p2] = []
+			connected_pts[p2].append(p1)
+
+	print("conn")
+	print(connected_pts)
+	var filtered_point_sets1 = []
+	for point_set in filtered_point_sets:
+		var skip = false
+		# for idx1 in point_set.size():
+		# 	for idx2 in point_set.size():
+		# 		if idx1 == idx2:
+		# 			continue
+		# 		if idx2 == (idx1+1)%point_set.size():
+		# 			continue
+		# 		if idx1 == (idx2+1)%point_set.size():
+		# 			continue
+		# 		var p1 = point_set[idx1]
+		# 		var p2 = point_set[idx2]
+		# 		#check connected
+		# 		var filtered = connected_pts[p1].filter(func (x): x.is_equal_approx(p1))
+		# 		if filtered.size() > 0:
+		# 			skip = true
+		for point_set2 in filtered_point_sets:
+			var poly1 = []
+			for point in point_set:
+				poly1.append(Vector2(point.x, point.z))
+			var poly2 = []
+			for point in point_set2:
+				poly2.append(Vector2(point.x, point.z))
+			
+			if GEOMETRY_UTILS.is_polygon_inside(poly1, poly2):
+				skip = true
+				break
+		if skip:
+			continue
+		
+		filtered_point_sets1.append(point_set)
 				
 	print("filtered")
 	print(filtered_point_sets)
 	print(point_sets.size())
 	print(filtered_point_sets.size())
+	print(filtered_point_sets1.size())
 
 	return filtered_point_sets
-		
+
+func get_all_walls():
+	var walls = []
+	for elem in get_node("generated").get_children():
+		if not elem is Wall:
+			continue
+		walls.append(elem)
+	return walls
+
+func delete_wall_connection(wall_to_del):
+	for wall: Wall in get_all_walls():
+		var idx = -1
+		for i in wall.wall_connected.size():
+			var conn = wall.wall_connected[i]
+			if conn.wall == wall_to_del:
+				idx = i
+				break
+		if idx == -1:
+			continue
+		wall.wall_connected.remove_at(idx)
+
+
 	
 	
 	
