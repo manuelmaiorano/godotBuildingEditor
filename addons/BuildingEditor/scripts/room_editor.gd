@@ -16,6 +16,7 @@ enum EDITOR_STATE {DRAW, DELETE, CONTINUE, ADD_OPENING, PAINT, DECORATION}
 @export var width = 0.2
 
 @export var snap_amount = 0.5
+@export var material_to_paint: StandardMaterial3D = null
 
 var rooms: Array[Room]
 
@@ -59,11 +60,15 @@ class WallIntercData:
 	var point_at_bottom: Vector3
 
 
-func get_wall_interc_data(wall, raycast_pos):
+func get_wall_interc_data(wall, raycast_pos, snap_to_grid = false):
 	var data = WallIntercData.new()
 
 	var tr = wall.transform
 	var rayc_in_tr = tr.inverse() * raycast_pos
+	if snap_to_grid:
+		var snapped = rayc_in_tr.snapped(Vector3.ONE * snap_amount)
+		rayc_in_tr.z = snapped.z
+		raycast_pos = tr * rayc_in_tr
 	
 	data.point_at_bottom = Vector3(raycast_pos.x, tr.origin.y, raycast_pos.z)
 	data.len_along_wall = rayc_in_tr.z
@@ -102,7 +107,7 @@ func process_event(event, raycast_result):
 						if coll_parent is Wall:
 							var wall: Wall = coll_parent
 
-							var data: WallIntercData = get_wall_interc_data(coll_parent, snap_point(raycast_result.position, true, true))
+							var data: WallIntercData = get_wall_interc_data(coll_parent, raycast_result.position, true)
 							update_gizmo(data.point_at_bottom)
 							
 							wall.add_split_len(data.len_along_wall, data.is_side_out)
@@ -139,6 +144,36 @@ func process_event(event, raycast_result):
 							delete_wall_connection(coll_parent)
 							create_floors()
 							coll_parent.free()
+							return EditorPlugin.AFTER_GUI_INPUT_STOP
+						return EditorPlugin.AFTER_GUI_INPUT_PASS
+		
+		EDITOR_STATE.CONTINUE:
+			if event is InputEventMouse:
+				if event is InputEventMouseButton and event.pressed:
+					if event.button_index == MOUSE_BUTTON_LEFT:
+						if !raycast_result:
+							return EditorPlugin.AFTER_GUI_INPUT_PASS
+						
+						var coll_parent = raycast_result.collider.get_parent()
+						if coll_parent is Wall:
+							
+							return EditorPlugin.AFTER_GUI_INPUT_STOP
+						return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+		EDITOR_STATE.PAINT:
+			if material_to_paint == null:
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
+			if event is InputEventMouse:
+				if event is InputEventMouseButton and event.pressed:
+					if event.button_index == MOUSE_BUTTON_LEFT:
+						if !raycast_result:
+							return EditorPlugin.AFTER_GUI_INPUT_PASS
+						
+						var coll_parent = raycast_result.collider.get_parent()
+						if coll_parent is Wall:
+							var data = get_wall_interc_data(coll_parent, raycast_result.position)
+							coll_parent.set_material(data.len_along_wall, material_to_paint, data.is_side_out)
+
 							return EditorPlugin.AFTER_GUI_INPUT_STOP
 						return EditorPlugin.AFTER_GUI_INPUT_PASS
 		

@@ -16,6 +16,9 @@ var split_pts_out: Array[float] = []
 var width = 0.2
 var height = 2.4
 
+var materials_in = []
+var materials_out = []
+
 var csgmesh = null
 
 var wall_connected: Array[WallConnection]
@@ -23,6 +26,8 @@ var wall_connected: Array[WallConnection]
 func _init() -> void:
 	split_pts_in = [0, 1]
 	split_pts_out = [0, 1]
+	materials_in = [StandardMaterial3D.new()]
+	materials_out = [StandardMaterial3D.new()]
 	border_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/border.res").initialize()
 	wall_in_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/Inner.res").initialize()
 	wall_out_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/outer.res").initialize()
@@ -41,6 +46,14 @@ func gen_array_mesh():
 		surface_array[Mesh.ARRAY_NORMAL] = surf.normals
 		surface_array[Mesh.ARRAY_INDEX] =  surf.indices
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array)
+
+	var all_mats = materials_in.duplicate()
+	all_mats.append_array(materials_out)
+	
+	for idx in all_mats.size():
+		var mat = all_mats[idx]
+		mesh.surface_set_material(idx, mat)
+	
 	update_collision()
 		
 func gen_border():
@@ -70,14 +83,33 @@ func gen_wall(out = false):
 		
 func add_split_len(pt, out = false):
 	var arr = split_pts_in
+	var mat_arr = materials_in
 	if out:
 		arr = split_pts_out
+		mat_arr = materials_out
 		
 	for idx in arr.size():
 		if arr[idx] < pt:
 			arr.insert(idx, pt)
 			break
+	mat_arr.append(StandardMaterial3D.new())
 			
+	gen_array_mesh()
+
+func set_material(pt, mat, out = false):
+	var arr = split_pts_in
+	var mat_arr = materials_in
+	if out:
+		arr = split_pts_out
+		mat_arr = materials_out
+		
+	var idx_to_set = -1
+	for idx in arr.size():
+		if arr[idx] < pt:
+			idx_to_set = idx-1
+			break
+			
+	mat_arr[idx_to_set] = mat
 	gen_array_mesh()
 	
 func add_wall_connection(wall: Wall):
