@@ -18,6 +18,7 @@ enum EDITOR_STATE {DRAW, DELETE, CONTINUE, ADD_OPENING, PAINT, DECORATION}
 @export var snap_amount = 0.5
 @export var material_to_paint: StandardMaterial3D = null
 @export var curr_decoration: ControllableSurf
+@export var curr_open_scene: PackedScene
 
 var rooms: Array[Room]
 
@@ -59,6 +60,8 @@ class WallIntercData:
 	var len_along_wall: float
 	var is_side_out: bool
 	var point_at_bottom: Vector3
+	var transform: Transform3D
+	var bool_origin: Vector3
 
 
 func get_wall_interc_data(wall, raycast_pos, snap_to_grid = false):
@@ -74,6 +77,8 @@ func get_wall_interc_data(wall, raycast_pos, snap_to_grid = false):
 	data.point_at_bottom = Vector3(raycast_pos.x, tr.origin.y, raycast_pos.z)
 	data.len_along_wall = rayc_in_tr.z
 	data.is_side_out = rayc_in_tr.x < wall.width/2
+	data.transform = wall.transform
+	data.bool_origin = tr * Vector3(wall.width/2, 0, rayc_in_tr.z)
 	return data
 	
 
@@ -196,6 +201,8 @@ func process_event(event, raycast_result):
 						return EditorPlugin.AFTER_GUI_INPUT_PASS
 		
 		EDITOR_STATE.ADD_OPENING:
+			if curr_open_scene == null:
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
 			if event is InputEventMouse:
 				if event is InputEventMouseButton and event.pressed:
 					if event.button_index == MOUSE_BUTTON_LEFT:
@@ -209,20 +216,38 @@ func process_event(event, raycast_result):
 							var wall_instance =  selected_object.get_parent()
 							var idx = wall_instances.find(selected_object.get_parent())
 							#substitute_wall(idx)
+
+							var data = get_wall_interc_data(wall_instance, raycast_result.position)
+
+							#get CSGMESH
 							var csgmesh = wall_instance.csgmesh
 							if wall_instance.csgmesh == null:
 								csgmesh = CSGMesh3D.new()
 								csgmesh.mesh = wall_instance.mesh
 								get_node("generated").add_child(csgmesh)
+								csgmesh.set_owner(self)
 								csgmesh.transform = wall_instance.transform
 								wall_instance.csgmesh = csgmesh
-								
-							var csgbox = CSGBox3D.new()
-							csgmesh.add_child(csgbox)
-							csgbox.operation = CSGShape3D.OPERATION_SUBTRACTION
-							csgbox.global_position = raycast_result.position
-							csgmesh.set_owner(self)
-							csgbox.set_owner(self)
+
+							#add instance
+							var new_instance = curr_open_scene.instantiate()
+							csgmesh.add_child(new_instance)
+							#new_instance.transform.basis = data.transform.basis
+							new_instance.global_position = data.bool_origin
+							
+							new_instance.set_owner(self)
+							
+							#get boolean
+							var _boolean = new_instance.get_node("boolean")
+							var csg_boolean = _boolean.duplicate()
+							# #var csgbox = CSGBox3D.new()
+							csgmesh.add_child(csg_boolean)
+							# csg_boolean.operation = CSGShape3D.OPERATION_SUBTRACTION
+							csg_boolean.global_position = _boolean.global_position
+							csg_boolean.set_owner(self)
+							csg_boolean.show()
+
+							#hide wall
 							wall_instance.hide()
 							return EditorPlugin.AFTER_GUI_INPUT_STOP
 						return EditorPlugin.AFTER_GUI_INPUT_PASS
