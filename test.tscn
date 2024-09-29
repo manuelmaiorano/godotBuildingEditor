@@ -31,7 +31,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0, 9)
 script = ExtResource("3_yv3ce")
 
 [node name="Handle" type="Marker3D" parent="." instance=ExtResource("2_fo4ge")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 6)
 script = ExtResource("3_yv3ce")
 
 [connection signal="input_event" from="." to="." method="_on_input_event"]

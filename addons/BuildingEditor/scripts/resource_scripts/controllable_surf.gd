@@ -61,6 +61,9 @@ func rotatey(angle_deg: float):
 		verts[idx] = verts[idx].rotated( Vector3.UP, deg_to_rad(angle_deg))
 		normals[idx] = normals[idx].rotated( Vector3.UP, deg_to_rad(angle_deg))
 
+func scalez(val: float):
+	for idx in verts.size():
+		verts[idx].z *= val
 
 func shear_vgroup(name, angle_deg: float):
 	for group in vgroups.groups:

@@ -1,0 +1,7 @@
+[gd_scene load_steps=3 format=3 uid="uid://cgy7dnbvdx3s4"]
+
+[ext_resource type="PackedScene" uid="uid://w5v2qjmkonb8" path="res://addons/BuildingEditor/assets/gizmos/arrow.glb" id="1_e2syq"]
+[ext_resource type="Script" path="res://addons/BuildingEditor/scripts/objects/arrow.gd" id="2_kqxpj"]
+
+[node name="arrow" instance=ExtResource("1_e2syq")]
+script = ExtResource("2_kqxpj")
