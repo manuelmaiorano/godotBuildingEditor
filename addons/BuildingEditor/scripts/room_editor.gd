@@ -162,7 +162,13 @@ func process_event(event, raycast_result):
 						
 						var coll_parent = raycast_result.collider.get_parent()
 						if coll_parent is Wall:
-							
+							var point = get_open_end(coll_parent)
+							if point == null:
+								return EditorPlugin.AFTER_GUI_INPUT_PASS
+							update_gizmo(point)
+							wall_instances.append(coll_parent)
+							process_new_point(point)
+							state = EDITOR_STATE.DRAW
 							return EditorPlugin.AFTER_GUI_INPUT_STOP
 						return EditorPlugin.AFTER_GUI_INPUT_PASS
 
@@ -457,6 +463,25 @@ func delete_wall_connection(wall_to_del):
 		if idx == -1:
 			continue
 		wall.wall_connected.remove_at(idx)
+
+func get_open_end(wall):
+	var st_connected = false
+	var end_connected = false
+	for i in wall.wall_connected.size():
+		var conn = wall.wall_connected[i]
+		if conn.interc_point.is_equal_approx(wall.get_start_pt()):
+			st_connected = true
+			continue
+		if conn.interc_point.is_equal_approx(wall.get_end_pt()):
+			end_connected = true
+			continue
+
+	if st_connected and end_connected:
+		return null
+	if st_connected:
+		return wall.get_end_pt()
+	return wall.get_start_pt()
+		
 
 
 	
