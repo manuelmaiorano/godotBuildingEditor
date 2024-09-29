@@ -19,6 +19,9 @@ var height = 2.4
 var materials_in = []
 var materials_out = []
 
+var decorations_in = []
+var decorations_out = []
+
 var csgmesh = null
 
 var wall_connected: Array[WallConnection]
@@ -28,6 +31,8 @@ func _init() -> void:
 	split_pts_out = [0, 1]
 	materials_in = [StandardMaterial3D.new()]
 	materials_out = [StandardMaterial3D.new()]
+	decorations_in = [null]
+	decorations_out = [null]
 	border_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/border.res").initialize()
 	wall_in_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/Inner.res").initialize()
 	wall_out_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/outer.res").initialize()
@@ -38,6 +43,8 @@ func gen_array_mesh():
 	gen_wall()
 	gen_wall(true)
 	gen_border()
+	gen_dec()
+	gen_dec(true)
 	var surface_array = []
 	for surf in surfaces:
 		surface_array.resize(Mesh.ARRAY_MAX)
@@ -80,19 +87,47 @@ func gen_wall(out = false):
 				
 		var surf = msh.gen_new_surf(dict)
 		surfaces.append(surf)
+
+func gen_dec(out = false):
+	var split_pts = split_pts_in
+	var decs = decorations_in
+	if out:
+		split_pts = split_pts_out
+		decs = decorations_out
+	for idx in range(1, split_pts.size()):
+		var dec = decs[idx-1]
+		if dec == null:
+			continue
+		var c1 = split_pts[idx-1]
+		var c2 = split_pts[idx]
+		var dict = {"c1": Vector3(0, 0, c1), "c2": Vector3(0, 0, c2)}
+		if out:
+			dict = {"c1": Vector3(0, 0, 0), "c2": Vector3(0, 0, c2-c1)}
+		
+		
+		var surf = dec.gen_new_surf(dict)
+		if out:
+			surf.rotatey(180)
+			surf.translate(Vector3(0, 0, c2))
+		if not out:
+			surf.translate(Vector3(width, 0, 0))
+		surfaces.append(surf)
 		
 func add_split_len(pt, out = false):
 	var arr = split_pts_in
 	var mat_arr = materials_in
+	var dec_arr = decorations_in
 	if out:
 		arr = split_pts_out
 		mat_arr = materials_out
+		dec_arr = decorations_out
 		
 	for idx in arr.size():
 		if arr[idx] < pt:
 			arr.insert(idx, pt)
 			break
 	mat_arr.append(StandardMaterial3D.new())
+	dec_arr.append(null)
 			
 	gen_array_mesh()
 
@@ -110,6 +145,22 @@ func set_material(pt, mat, out = false):
 			break
 			
 	mat_arr[idx_to_set] = mat
+	gen_array_mesh()
+
+func add_decoration(pt, dec: ControllableSurf, out = false):
+	var arr = split_pts_in
+	var dec_arr = decorations_in
+	if out:
+		arr = split_pts_out
+		dec_arr = decorations_out
+		
+	var idx_to_set = -1
+	for idx in arr.size():
+		if arr[idx] < pt:
+			idx_to_set = idx-1
+			break
+
+	dec_arr[idx_to_set] = dec.duplicate().initialize()
 	gen_array_mesh()
 	
 func add_wall_connection(wall: Wall):

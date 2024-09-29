@@ -48,3 +48,16 @@ func move_vgroup(name, pos: Vector3):
 				if not is_zero_approx(pos.z):
 					verts[idx].z = pos.z
 			uvs[idx] = Vector2(verts[idx].z, verts[idx].y)
+
+func translate(pos: Vector3):
+	
+	for idx in verts.size():
+		verts[idx] += pos
+
+
+func rotatey(angle_deg: float):
+	
+	for idx in verts.size():
+		verts[idx] = verts[idx].rotated( Vector3.UP, deg_to_rad(angle_deg))
+		normals[idx] = normals[idx].rotated( Vector3.UP, deg_to_rad(angle_deg))
+		

@@ -17,6 +17,7 @@ enum EDITOR_STATE {DRAW, DELETE, CONTINUE, ADD_OPENING, PAINT, DECORATION}
 
 @export var snap_amount = 0.5
 @export var material_to_paint: StandardMaterial3D = null
+@export var curr_decoration: ControllableSurf
 
 var rooms: Array[Room]
 
@@ -173,6 +174,23 @@ func process_event(event, raycast_result):
 						if coll_parent is Wall:
 							var data = get_wall_interc_data(coll_parent, raycast_result.position)
 							coll_parent.set_material(data.len_along_wall, material_to_paint, data.is_side_out)
+
+							return EditorPlugin.AFTER_GUI_INPUT_STOP
+						return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+		EDITOR_STATE.DECORATION:
+			if curr_decoration == null:
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
+			if event is InputEventMouse:
+				if event is InputEventMouseButton and event.pressed:
+					if event.button_index == MOUSE_BUTTON_LEFT:
+						if !raycast_result:
+							return EditorPlugin.AFTER_GUI_INPUT_PASS
+						
+						var coll_parent = raycast_result.collider.get_parent()
+						if coll_parent is Wall:
+							var data = get_wall_interc_data(coll_parent, raycast_result.position)
+							coll_parent.add_decoration(data.len_along_wall, curr_decoration, data.is_side_out)
 
 							return EditorPlugin.AFTER_GUI_INPUT_STOP
 						return EditorPlugin.AFTER_GUI_INPUT_PASS
