@@ -33,9 +33,9 @@ func _init() -> void:
 	materials_out = [StandardMaterial3D.new()]
 	decorations_in = [null]
 	decorations_out = [null]
-	border_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/border.res").initialize()
-	wall_in_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/Inner.res").initialize()
-	wall_out_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/outer.res").initialize()
+	border_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/border.res").duplicate(true).initialize()
+	wall_in_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/Inner.res").duplicate(true).initialize()
+	wall_out_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/outer.res").duplicate(true).initialize()
 	
 func gen_array_mesh():
 	mesh = ArrayMesh.new()
