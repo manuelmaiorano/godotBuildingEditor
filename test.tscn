@@ -29,8 +29,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 0, -2)
 [node name="@Marker3D@22178" parent="." instance=ExtResource("2_fo4ge")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 0, 9)
 
-[node name="@Marker3D@18019" type="Marker3D" parent="." instance=ExtResource("2_fo4ge")]
+[node name="@Marker3D@18019" parent="." instance=ExtResource("2_fo4ge")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 0, 3.5)
+
+[node name="Handle" type="Marker3D" parent="." instance=ExtResource("2_fo4ge")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 5.5)
 script = ExtResource("3_yv3ce")
 
 [connection signal="input_event" from="." to="." method="_on_input_event"]
