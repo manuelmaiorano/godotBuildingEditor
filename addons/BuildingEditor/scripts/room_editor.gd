@@ -5,6 +5,9 @@ class_name RoomEditor
 
 enum EDITOR_STATE {DRAW, DELETE, CONTINUE, ADD_OPENING, PAINT, DECORATION}
 
+const GROUP_FLOOR = "floors"
+const GROUP_CEILING = "ceiling"
+
 @onready var points: Array[Vector3] = []
 @onready var wall_instances: Array[Wall] = []
 @onready var state: EDITOR_STATE = EDITOR_STATE.DRAW
@@ -16,6 +19,11 @@ enum EDITOR_STATE {DRAW, DELETE, CONTINUE, ADD_OPENING, PAINT, DECORATION}
 @export var width = 0.2
 
 @export var snap_amount = 0.5
+@export var current_floor: int = 0 :
+	set(value):
+		current_floor = value
+		get_node("collision_helper").global_position.y = value * height - 0.3
+
 @export var material_to_paint: StandardMaterial3D = null
 @export var curr_decoration: ControllableSurf
 @export var curr_open_scene: PackedScene
@@ -56,6 +64,16 @@ func connect_walls(wall1, wall2):
 	wall1.add_wall_connection(wall2)
 	wall2.add_wall_connection(wall1)
 
+
+class CeilIntercData:
+	var len_along_wall: float
+
+
+func get_ceil_interc_data(wall, raycast_pos, snap_to_grid = false):
+	var data = CeilIntercData.new()
+
+	return data
+
 class WallIntercData:
 	var len_along_wall: float
 	var is_side_out: bool
@@ -87,7 +105,6 @@ func process_event(event, raycast_result):
 		EDITOR_STATE.DRAW:
 			if event is InputEventKey:
 				if event.pressed and event.keycode == KEY_C:
-					create_floor(points)
 					process_new_point(points[0])
 					
 					#wall connections
@@ -97,19 +114,21 @@ func process_event(event, raycast_result):
 					points.clear()
 					wall_instances.clear()
 					#rooms.append(room)
-					get_rooms()
+					create_floors()
 			if event is InputEventMouse:
 				if !raycast_result:
 					return EditorPlugin.AFTER_GUI_INPUT_PASS
 				var point = raycast_result.position
 				var snapped_point = snap_point(point, true, true)
+				var coll_parent = raycast_result.collider.get_parent()
+				if coll_parent is Ceiling or raycast_result.collider.name == "collision_helper":
+					snapped_point.y = raycast_result.position.y
 				
 				if event is InputEventMouseMotion:
 					update_gizmo(snapped_point)
 					return EditorPlugin.AFTER_GUI_INPUT_PASS
 				elif event is InputEventMouseButton and event.pressed:
 					if event.button_index == MOUSE_BUTTON_LEFT:
-						var coll_parent = raycast_result.collider.get_parent()
 						if coll_parent is Wall:
 							var wall: Wall = coll_parent
 
@@ -317,16 +336,35 @@ func create_floor(points):
 	var vertices = PackedVector3Array()
 	for point in points:
 		vertices.append(Vector3(point))
-	var mesh = CeilingCreator.create_from_vertices(vertices)
-	var meshinstance = MeshInstance3D.new()
-	meshinstance.mesh = mesh
-	get_node("generated").add_child(meshinstance)
-	meshinstance.set_owner(self)
-	meshinstance.add_to_group("floors")
+
+	var floor = Ceiling.new(points)
+	add_new_element(floor, "floors")
+	
+	return floor
+
+
+func create_ceiling(points):
+	var vertices = PackedVector3Array()
+	for point in points:
+		vertices.append(Vector3(point))
+
+	var ceiling = Ceiling.new(points)
+	add_new_element(ceiling, "ceiling")
+	return ceiling
+
+func add_new_element(elem, group = null):
+	get_node("generated").add_child(elem)
+	elem.set_owner(self)
+	if group != null:
+		elem.add_to_group(group)
 
 func create_floors():
+	for room in rooms:
+		room.free()
+	rooms.clear()
 	var cycles = get_rooms()
 	get_tree().call_group("floors", "free")
+	get_tree().call_group("ceiling", "free")
 	for cycle in cycles:
 		var polygon: Array[Vector2] = []
 		for pt in cycle:
@@ -334,7 +372,11 @@ func create_floors():
 		
 		if GEOMETRY_UTILS.isClockwise(polygon):
 			cycle.reverse()
-		create_floor(cycle)
+		var floor = create_floor(cycle)
+		var ceiling = create_ceiling(cycle)
+		var room = Room.new(cycle, floor, ceiling, height)
+		add_new_element(room)
+		rooms.append(room)
 	
 	print("Number of Rooms: %d" % get_tree().get_nodes_in_group("floors").size())
 	

@@ -41,34 +41,34 @@ static  func create_from_vertices(vertices: PackedVector3Array):
 	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array_top)
 	
 	#border
-	var surface_array_border = []
-	surface_array_border.resize(Mesh.ARRAY_MAX)
-	var border_vertices = PackedVector3Array()
-	var border_indices = PackedInt32Array()
-	var border_normals = PackedVector3Array()
-	var border_uvs = PackedVector2Array()
-	for idx in vertices.size():
-		var vert = vertices[idx]
-		var vert_next = vertices[(idx+1) % vertices.size()]
-		var normal = (-vert_next+vert).cross(Vector3.UP).normalized()
-		border_vertices.append(Vector3(vert))
-		border_vertices.append(Vector3(vert.x, vert.y - 0.2, vert.z))
-		border_vertices.append(Vector3(vert_next))
-		border_vertices.append(Vector3(vert_next.x, vert_next.y - 0.2, vert_next.z))
+	# var surface_array_border = []
+	# surface_array_border.resize(Mesh.ARRAY_MAX)
+	# var border_vertices = PackedVector3Array()
+	# var border_indices = PackedInt32Array()
+	# var border_normals = PackedVector3Array()
+	# var border_uvs = PackedVector2Array()
+	# for idx in vertices.size():
+	# 	var vert = vertices[idx]
+	# 	var vert_next = vertices[(idx+1) % vertices.size()]
+	# 	var normal = (-vert_next+vert).cross(Vector3.UP).normalized()
+	# 	border_vertices.append(Vector3(vert))
+	# 	border_vertices.append(Vector3(vert.x, vert.y - 0.2, vert.z))
+	# 	border_vertices.append(Vector3(vert_next))
+	# 	border_vertices.append(Vector3(vert_next.x, vert_next.y - 0.2, vert_next.z))
 		
-		var last_idx = border_vertices.size()-1
-		border_indices.append_array([last_idx-3, last_idx-2, last_idx-1])
-		border_indices.append_array([last_idx-1, last_idx-2, last_idx])
-		for i in 4:
-			border_normals.append(normal)
-			border_uvs.append(Vector2.ZERO)
+	# 	var last_idx = border_vertices.size()-1
+	# 	border_indices.append_array([last_idx-3, last_idx-2, last_idx-1])
+	# 	border_indices.append_array([last_idx-1, last_idx-2, last_idx])
+	# 	for i in 4:
+	# 		border_normals.append(normal)
+	# 		border_uvs.append(Vector2.ZERO)
 
-	surface_array_border[Mesh.ARRAY_VERTEX] = border_vertices
-	surface_array_border[Mesh.ARRAY_TEX_UV] = border_uvs
-	surface_array_border[Mesh.ARRAY_NORMAL] = border_normals
-	surface_array_border[Mesh.ARRAY_INDEX] = border_indices
+	# surface_array_border[Mesh.ARRAY_VERTEX] = border_vertices
+	# surface_array_border[Mesh.ARRAY_TEX_UV] = border_uvs
+	# surface_array_border[Mesh.ARRAY_NORMAL] = border_normals
+	# surface_array_border[Mesh.ARRAY_INDEX] = border_indices
 	
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array_border)
+	# mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array_border)
 	
 	#bottom
 	var surface_array_bottom = []
