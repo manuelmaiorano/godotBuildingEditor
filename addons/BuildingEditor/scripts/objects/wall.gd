@@ -61,6 +61,9 @@ func gen_array_mesh():
 		var mat = all_mats[idx]
 		mesh.surface_set_material(idx, mat)
 	
+	if has_node("csgmesh"):
+		get_node("csgmesh").mesh = mesh
+		mesh = null
 	update_collision()
 		
 func gen_border():
@@ -193,6 +196,36 @@ func add_wall_connection(wall: Wall):
 	
 	wall_connected.append(conn)
 
+func add_opening(opening_scene, len_along_wall):
+
+	#free collision
+	if not has_csgmesh() and get_children().size() > 0:
+		get_child(0).free()
+
+	var csgmesh = null
+	if not has_csgmesh():
+		csgmesh = CSGMesh3D.new()
+		add_child(csgmesh)
+		csgmesh.set_owner(get_parent().get_parent())
+		csgmesh.name = "csgmesh"
+		csgmesh.mesh = mesh
+		csgmesh.use_collision = true
+	csgmesh = get_csgmesh()
+
+	#insatnciate
+	var new_instance = opening_scene.instantiate()
+	csgmesh.add_child(new_instance)
+	new_instance.position = Vector3(width/2, 0, len_along_wall)
+	new_instance.set_owner(self)
+
+	#get boolean
+	var _boolean = new_instance.get_node("boolean")
+	var csg_boolean = _boolean.duplicate()
+	csgmesh.add_child(csg_boolean)
+	csg_boolean.global_position = _boolean.global_position
+	csg_boolean.set_owner(self)
+	csg_boolean.show()
+
 func get_start_pt():
 	var vec = Vector3(0, 0, split_pts_out.back())
 	return transform * vec
@@ -224,6 +257,8 @@ func set_c2(c2):
 	gen_array_mesh()
 	
 func update_collision():
+	if has_csgmesh():
+		return
 	if get_children().size() == 0:
 		create_trimesh_collision()
 		return
@@ -231,11 +266,22 @@ func update_collision():
 	create_trimesh_collision()
 
 func set_collision(disabled):
-	
+	if has_csgmesh():
+		get_child(0).use_collision = not disabled
+		return
+
 	get_child(0).get_child(0).disabled = disabled
 	if not disabled:
 		update_collision()
 
+
+func has_csgmesh():
+	return has_node("csgmesh")
+
+
+
+func get_csgmesh():
+	return get_node("csgmesh")
 
 
 	

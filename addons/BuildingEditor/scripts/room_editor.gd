@@ -251,44 +251,14 @@ func process_event(event, raycast_result):
 						
 						var point = raycast_result.position
 						var selected_object = raycast_result.collider
+						var coll_parent = selected_object.get_parent()
 						
-						if selected_object.get_parent() is Wall:
-							var wall_instance =  selected_object.get_parent()
-							var idx = wall_instances.find(selected_object.get_parent())
-							#substitute_wall(idx)
+						if coll_parent is Wall:
+							var wall_instance = coll_parent
 
 							var data = get_wall_interc_data(wall_instance, raycast_result.position)
 
-							#get CSGMESH
-							var csgmesh = wall_instance.csgmesh
-							if wall_instance.csgmesh == null:
-								csgmesh = CSGMesh3D.new()
-								csgmesh.mesh = wall_instance.mesh
-								get_node("generated").add_child(csgmesh)
-								csgmesh.set_owner(self)
-								csgmesh.transform = wall_instance.transform
-								wall_instance.csgmesh = csgmesh
-
-							#add instance
-							var new_instance = curr_open_scene.instantiate()
-							csgmesh.add_child(new_instance)
-							#new_instance.transform.basis = data.transform.basis
-							new_instance.global_position = data.bool_origin
-							
-							new_instance.set_owner(self)
-							
-							#get boolean
-							var _boolean = new_instance.get_node("boolean")
-							var csg_boolean = _boolean.duplicate()
-							# #var csgbox = CSGBox3D.new()
-							csgmesh.add_child(csg_boolean)
-							# csg_boolean.operation = CSGShape3D.OPERATION_SUBTRACTION
-							csg_boolean.global_position = _boolean.global_position
-							csg_boolean.set_owner(self)
-							csg_boolean.show()
-
-							#hide wall
-							wall_instance.hide()
+							wall_instance.add_opening(curr_open_scene, data.len_along_wall)
 							return EditorPlugin.AFTER_GUI_INPUT_STOP
 						return EditorPlugin.AFTER_GUI_INPUT_PASS
 			

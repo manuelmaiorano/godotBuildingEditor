@@ -1,10 +1,8 @@
-[gd_scene load_steps=8 format=3 uid="uid://vbgylgxm2qvq"]
+[gd_scene load_steps=6 format=3 uid="uid://vbgylgxm2qvq"]
 
 [ext_resource type="Script" path="res://addons/BuildingEditor/scripts/room_editor.gd" id="1_pqaas"]
 [ext_resource type="Material" uid="uid://ctnlo5p2hvhph" path="res://addons/BuildingEditor/assets/materials/Material.001.tres" id="2_7woo0"]
-[ext_resource type="PackedScene" uid="uid://b1o61glif6eqo" path="res://addons/BuildingEditor/scenes/gizmos/handle.tscn" id="2_fo4ge"]
 [ext_resource type="Resource" uid="uid://dctqm8jdcmjwj" path="res://addons/BuildingEditor/resources/controllableMeshes/baseboard.res" id="3_5agih"]
-[ext_resource type="Script" path="res://addons/BuildingEditor/scripts/handle.gd" id="3_yv3ce"]
 [ext_resource type="PackedScene" uid="uid://dq6ipkm5xen5q" path="res://addons/BuildingEditor/scenes/opening/door.tscn" id="4_ue7r6"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qd7s4"]
@@ -25,17 +23,3 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
 shape = SubResource("BoxShape3D_qd7s4")
 
 [node name="generated" type="Node3D" parent="."]
-
-[node name="@Marker3D@38676" parent="." instance=ExtResource("2_fo4ge")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2.4, -9.5)
-
-[node name="@Marker3D@18410" parent="." instance=ExtResource("2_fo4ge")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7, 2.4, -9.5)
-
-[node name="@Marker3D@19974" type="Marker3D" parent="." instance=ExtResource("2_fo4ge")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 0, 1.5)
-script = ExtResource("3_yv3ce")
-
-[node name="Handle" type="Marker3D" parent="." instance=ExtResource("2_fo4ge")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 0, -6)
-script = ExtResource("3_yv3ce")
