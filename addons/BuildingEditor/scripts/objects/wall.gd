@@ -31,8 +31,8 @@ func _init() -> void:
 	split_pts_out = [0, 1]
 	materials_in = [StandardMaterial3D.new()]
 	materials_out = [StandardMaterial3D.new()]
-	decorations_in = [null]
-	decorations_out = [null]
+	decorations_in = [[]]
+	decorations_out = [[]]
 	border_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/border.res").duplicate(true).initialize()
 	wall_in_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/Inner.res").duplicate(true).initialize()
 	wall_out_mesh = preload("res://addons/BuildingEditor/resources/controllableMeshes/outer.res").duplicate(true).initialize()
@@ -43,8 +43,8 @@ func gen_array_mesh():
 	gen_wall()
 	gen_wall(true)
 	gen_border()
-	gen_dec()
-	gen_dec(true)
+	update_dec()
+	update_dec(true)
 	var surface_array = []
 	for surf in surfaces:
 		surface_array.resize(Mesh.ARRAY_MAX)
@@ -91,30 +91,30 @@ func gen_wall(out = false):
 		var surf = msh.gen_new_surf(dict)
 		surfaces.append(surf)
 
-func gen_dec(out = false):
+func update_dec(out = false):
 	var split_pts = split_pts_in
 	var decs = decorations_in
 	if out:
 		split_pts = split_pts_out
 		decs = decorations_out
 	for idx in range(1, split_pts.size()):
-		var dec = decs[idx-1]
-		if dec == null:
+		var decorations = decs[idx-1]
+		if decorations.size() == 0:
 			continue
 		var c1 = split_pts[idx-1]
 		var c2 = split_pts[idx]
-		var dict = {"c1": Vector3(0, 0, c1), "c2": Vector3(0, 0, c2)}
-		if out:
-			dict = {"c1": Vector3(0, 0, 0), "c2": Vector3(0, 0, c2-c1)}
-		
-		
-		var surf = dec.gen_new_surf(dict)
-		if out:
-			surf.rotatey(180)
-			surf.translate(Vector3(0, 0, c2))
-		if not out:
-			surf.translate(Vector3(width, 0, 0))
-		surfaces.append(surf)
+
+		for dec in decorations:
+			if out:
+				dec.set_c1(0)
+				dec.set_c2(c2-c1)
+				dec.set_roty(180)
+				dec.set_translation(Vector3(0, 0, c2))
+			else:
+				dec.set_c1(c1)
+				dec.set_c2(c2)
+				dec.set_translation(Vector3(width, 0, 0))
+
 		
 func add_split_len(pt, out = false):
 	var arr = split_pts_in
@@ -130,7 +130,7 @@ func add_split_len(pt, out = false):
 			arr.insert(idx, pt)
 			break
 	mat_arr.append(StandardMaterial3D.new())
-	dec_arr.append(null)
+	dec_arr.append([])
 			
 	gen_array_mesh()
 
@@ -163,7 +163,12 @@ func add_decoration(pt, dec: ControllableSurf, out = false):
 			idx_to_set = idx-1
 			break
 
-	dec_arr[idx_to_set] = dec.duplicate().initialize()
+	var wall_dec = WallDecoration.new(dec)
+	add_child(wall_dec)
+	dec_arr[idx_to_set].append(wall_dec)
+	for boolean in get_booleans():
+		wall_dec.add_opening(boolean)
+
 	gen_array_mesh()
 	
 func add_wall_connection(wall: Wall):
@@ -199,8 +204,9 @@ func add_wall_connection(wall: Wall):
 func add_opening(opening_scene, len_along_wall):
 
 	#free collision
-	if not has_csgmesh() and get_children().size() > 0:
-		get_child(0).free()
+	var st_body = get_static_body()
+	if not has_csgmesh() and st_body != null:
+		st_body.free()
 
 	var csgmesh = null
 	if not has_csgmesh():
@@ -225,6 +231,14 @@ func add_opening(opening_scene, len_along_wall):
 	csg_boolean.global_position = _boolean.global_position
 	csg_boolean.set_owner(self)
 	csg_boolean.show()
+
+	for decorations in decorations_in:
+		for dec in decorations:
+			dec.add_opening(_boolean)
+	
+	for decorations in decorations_out:
+		for dec in decorations:
+			dec.add_opening(_boolean)
 
 func get_start_pt():
 	var vec = Vector3(0, 0, split_pts_out.back())
@@ -259,18 +273,20 @@ func set_c2(c2):
 func update_collision():
 	if has_csgmesh():
 		return
-	if get_children().size() == 0:
+	var st_body = get_static_body()
+	if st_body == null:
 		create_trimesh_collision()
 		return
-	get_child(0).free()
+	st_body.free()
 	create_trimesh_collision()
 
 func set_collision(disabled):
 	if has_csgmesh():
-		get_child(0).use_collision = not disabled
+		get_csgmesh().use_collision = not disabled
 		return
 
-	get_child(0).get_child(0).disabled = disabled
+	var st_body = get_static_body()
+	st_body.get_child(0).disabled = disabled
 	if not disabled:
 		update_collision()
 
@@ -278,10 +294,24 @@ func set_collision(disabled):
 func has_csgmesh():
 	return has_node("csgmesh")
 
+func get_booleans():
+	var booleans = []
+	if has_csgmesh():
+		var csgmesh = get_csgmesh()
+		for elem in csgmesh.get_children():
+			if elem is CSGPrimitive3D:
+				booleans.append(elem)
 
+	return booleans
 
 func get_csgmesh():
 	return get_node("csgmesh")
+
+func get_static_body():
+	for child in get_children():
+		if child is StaticBody3D:
+			return child
+	return null
 
 
 	
