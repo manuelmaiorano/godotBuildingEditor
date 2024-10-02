@@ -5,8 +5,9 @@ class_name RoomEditor
 
 enum EDITOR_STATE {DRAW, DELETE, CONTINUE, ADD_OPENING, PAINT, DECORATION}
 
-const GROUP_FLOOR = "floors"
-const GROUP_CEILING = "ceiling"
+const GROUP_WALLS = "walls_%d"
+const GROUP_FLOOR = "floors_%d"
+const GROUP_CEILING = "ceilings_%d"
 
 @onready var points: Array[Vector3] = []
 @onready var wall_instances: Array[Wall] = []
@@ -21,14 +22,28 @@ const GROUP_CEILING = "ceiling"
 @export var snap_amount = 0.5
 @export var current_floor: int = 0 :
 	set(value):
+		if not floors.has(value):
+			floors.append(value)
 		current_floor = value
-		get_node("collision_helper").global_position.y = value * height - 0.3
+		get_node("collision_helper").global_position.y = value * height - 0.3/2
+		
+		hide_upper_floors(value)
+		show_lower_floors(value)
+		disable_collision_other_floors(value)
+		enable_collision_floor(value)
+
+@export var show_ceiling: bool = true:
+	set(value):
+		show_ceiling = value
+		show_hide_ceiling(current_floor, value)
 
 @export var material_to_paint: StandardMaterial3D = null
 @export var curr_decoration: ControllableSurf
 @export var curr_open_scene: PackedScene
 
 var rooms: Array[Room]
+
+var floors = [0]
 
 func set_state(new_state: EDITOR_STATE):
 	state = new_state
@@ -45,6 +60,9 @@ func _on_reset():
 	points = []
 	wall_instances = []
 	rooms = []
+	floors = [0]
+	current_floor = 0
+	show_ceiling = true
 	for child in get_node("generated").get_children():
 		child.queue_free()
 	
@@ -122,7 +140,7 @@ func process_event(event, raycast_result):
 				var snapped_point = snap_point(point, true, true)
 				var coll_parent = raycast_result.collider.get_parent()
 				if coll_parent is Ceiling or raycast_result.collider.name == "collision_helper":
-					snapped_point.y = raycast_result.position.y
+					snapped_point.y =  current_floor * height
 				
 				if event is InputEventMouseMotion:
 					update_gizmo(snapped_point)
@@ -303,13 +321,13 @@ func process_new_point(point):
 		if abs(angle) < 0.001:
 			new_width = 0
 		
-		create_wall1(points.back(), point)
+		create_wall(points.back(), point)
 		wall_instance.set_c2(new_width - length)
 		wall_instances.back().set_c1( -new_width)
 		points.append(point)
 		return
 	
-	create_wall1(points.back(), point)
+	create_wall(points.back(), point)
 	#create_marker(point)
 	points.append(point)
 
@@ -319,10 +337,9 @@ func create_marker(point):
 	handle_instance.set_owner(self)
 	handle_instance.global_position = point
 		
-func create_wall1(pointA, pointB):
+func create_wall(pointA, pointB):
 	var wall_instance = Wall.new()
-	get_node("generated").add_child(wall_instance)
-	wall_instance.set_owner(self)
+	add_new_element(wall_instance, GROUP_WALLS % current_floor)
 	
 	wall_instance.transform = Transform3D().looking_at(pointB - pointA)
 	
@@ -338,7 +355,7 @@ func create_floor(points):
 		vertices.append(Vector3(point))
 
 	var floor = Ceiling.new(points)
-	add_new_element(floor, "floors")
+	add_new_element(floor, GROUP_FLOOR % current_floor)
 	
 	return floor
 
@@ -349,7 +366,7 @@ func create_ceiling(points):
 		vertices.append(Vector3(point))
 
 	var ceiling = Ceiling.new(points)
-	add_new_element(ceiling, "ceiling")
+	add_new_element(ceiling, GROUP_CEILING % current_floor)
 	return ceiling
 
 func add_new_element(elem, group = null):
@@ -358,13 +375,69 @@ func add_new_element(elem, group = null):
 	if group != null:
 		elem.add_to_group(group)
 
+func clear_floor(number):
+	get_tree().call_group(GROUP_FLOOR % number, "free")
+	get_tree().call_group(GROUP_CEILING % number, "free")
+
+func disable_collision_other_floors(number):
+	for floor in floors:
+		if floor == number:
+			continue
+		for elem in get_tree().get_nodes_in_group(GROUP_WALLS % floor):
+			elem.set_collision(true)
+		for elem in get_tree().get_nodes_in_group(GROUP_CEILING % floor):
+			elem.set_collision(true)
+		for elem in get_tree().get_nodes_in_group(GROUP_FLOOR % floor):
+			elem.set_collision(true)
+
+func enable_collision_floor(number):
+
+	for elem in get_tree().get_nodes_in_group(GROUP_WALLS % number):
+		elem.set_collision(false)
+	for elem in get_tree().get_nodes_in_group(GROUP_CEILING % number):
+		elem.set_collision(false)
+	for elem in get_tree().get_nodes_in_group(GROUP_FLOOR % number):
+		elem.set_collision(false)
+
+
+func hide_upper_floors(number):
+	for floor in floors:
+		if floor > number:
+			for elem in get_tree().get_nodes_in_group(GROUP_WALLS % floor):
+				elem.hide()
+			for elem in get_tree().get_nodes_in_group(GROUP_CEILING % floor):
+				elem.hide()
+			for elem in get_tree().get_nodes_in_group(GROUP_FLOOR % floor):
+				elem.hide()
+
+
+func show_lower_floors(number):
+	for floor in floors:
+		if floor <= number:
+			for elem in get_tree().get_nodes_in_group(GROUP_WALLS % floor):
+				elem.show()
+			for elem in get_tree().get_nodes_in_group(GROUP_CEILING % floor):
+				elem.show()
+			for elem in get_tree().get_nodes_in_group(GROUP_FLOOR % floor):
+				elem.show()
+		
+
+func show_hide_ceiling(number, show):
+	for elem in get_tree().get_nodes_in_group(GROUP_CEILING % number):
+		if not show:
+			elem.hide()
+			elem.set_collision(true)
+			continue
+	
+		elem.show()
+		elem.set_collision(false)
+
 func create_floors():
-	for room in rooms:
-		room.free()
-	rooms.clear()
+	# for room in rooms:
+	# 	room.free()
+	# rooms.clear()
+	clear_floor(current_floor)
 	var cycles = get_rooms()
-	get_tree().call_group("floors", "free")
-	get_tree().call_group("ceiling", "free")
 	for cycle in cycles:
 		var polygon: Array[Vector2] = []
 		for pt in cycle:
@@ -372,21 +445,20 @@ func create_floors():
 		
 		if GEOMETRY_UTILS.isClockwise(polygon):
 			cycle.reverse()
-		var floor = create_floor(cycle)
+		if current_floor == 0:
+			var floor = create_floor(cycle)
 		var ceiling = create_ceiling(cycle)
-		var room = Room.new(cycle, floor, ceiling, height)
-		add_new_element(room)
-		rooms.append(room)
-	
-	print("Number of Rooms: %d" % get_tree().get_nodes_in_group("floors").size())
+		ceiling.global_position.y =  height
+		# add_new_element(room)
+		#rooms.append(room)
+	show_hide_ceiling(current_floor, show_ceiling)
+	print("Number of Rooms: %d" % get_tree().get_nodes_in_group(GROUP_CEILING % current_floor).size())
 	
 func get_rooms():
 	var graph = {}
 	var all_points = []
 	
-	for elem in get_node("generated").get_children():
-		if not elem is Wall:
-			continue
+	for elem in get_all_walls():
 		if graph.has(elem):
 			continue
 		graph[elem] = []
@@ -487,12 +559,7 @@ func get_rooms():
 	return filtered_point_sets
 
 func get_all_walls():
-	var walls = []
-	for elem in get_node("generated").get_children():
-		if not elem is Wall:
-			continue
-		walls.append(elem)
-	return walls
+	return get_tree().get_nodes_in_group(GROUP_WALLS % current_floor)
 
 func delete_wall_connection(wall_to_del):
 	for wall: Wall in get_all_walls():

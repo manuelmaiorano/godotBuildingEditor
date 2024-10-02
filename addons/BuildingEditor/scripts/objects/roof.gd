@@ -73,4 +73,10 @@ func update_collision():
 		return
 	get_child(0).free()
 	create_trimesh_collision()
+
+
+func set_collision(disabled):
+	get_child(0).get_child(0).disabled = disabled
+
+	
 	

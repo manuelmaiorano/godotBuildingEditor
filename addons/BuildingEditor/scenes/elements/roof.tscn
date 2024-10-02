@@ -4,7 +4,7 @@
 [ext_resource type="Resource" uid="uid://bhx8yb8vlqtjo" path="res://addons/BuildingEditor/resources/controllableMeshes/roof.res" id="2_dg2lp"]
 [ext_resource type="PackedScene" uid="uid://cgy7dnbvdx3s4" path="res://addons/BuildingEditor/scenes/gizmos/arrow.tscn" id="3_83o4k"]
 
-[sub_resource type="ArrayMesh" id="ArrayMesh_8ovcd"]
+[sub_resource type="ArrayMesh" id="ArrayMesh_02mbw"]
 _surfaces = [{
 "aabb": AABB(-1, -0.0746896, -1, 2, 1.07469, 2),
 "attribute_data": PackedByteArray("AACAPwAAAAAAAIA/AAAAAAAAgL8AAAAAAACAvwAAAAAAAACAAACAPwAAAIAAAIA/AACAP9v2mL0AAIA/2/aYvQAAgL/b9pi9AACAv9v2mL0AAACAAACAPwAAAIAAAIA/AAAAgAAAgD8AAACAAACAPwAAgD8AAAAAAACAPwAAAAAAAIA/AAAAAAAAgD8AAAAAAAAAgAAAgD8AAACAAACAPwAAgL8AAAAAAACAvwAAAAAAAIC/AAAAAAAAgL8AAAAAAAAAgAAAgD8AAACAAACAPwAAgD/b9pi9AACAP9v2mL0AAIA/2/aYvQAAgD/b9pi9AAAAgAAAgD8AAACAAACAPwAAgL/b9pi9AACAv9v2mL0AAIC/2/aYvQAAgL/b9pi9"),
@@ -18,7 +18,7 @@ _surfaces = [{
 }]
 
 [node name="Roof" type="MeshInstance3D"]
-mesh = SubResource("ArrayMesh_8ovcd")
+mesh = SubResource("ArrayMesh_02mbw")
 script = ExtResource("1_y5g0a")
 contr_mesh = ExtResource("2_dg2lp")
 
