@@ -41,8 +41,6 @@ const GROUP_CEILING = "ceilings_%d"
 @export var curr_decoration: ControllableSurf
 @export var curr_open_scene: PackedScene
 
-var rooms: Array[Room]
-
 var floors = [0]
 
 func set_state(new_state: EDITOR_STATE):
@@ -59,7 +57,6 @@ func _on_reset():
 	$Handle.queue_free()
 	points = []
 	wall_instances = []
-	rooms = []
 	floors = [0]
 	current_floor = 0
 	show_ceiling = true
