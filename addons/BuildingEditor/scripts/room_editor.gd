@@ -301,7 +301,7 @@ func process_event(event, raycast_result):
 			
 func update_gizmo(point):
 	if !handle:
-		var handle_instance = preload("res://handle.tscn").instantiate()
+		var handle_instance = preload("res://addons/BuildingEditor/scenes/gizmos/handle.tscn").instantiate()
 		add_child(handle_instance)
 		handle_instance.set_owner(self)
 		handle = handle_instance
@@ -332,7 +332,7 @@ func process_new_point(point):
 	points.append(point)
 
 func create_marker(point):
-	var handle_instance = preload("res://handle.tscn").instantiate()
+	var handle_instance = preload("res://addons/BuildingEditor/scenes/gizmos/handle.tscn").instantiate()
 	get_node("generated").add_child(handle_instance)
 	handle_instance.set_owner(self)
 	handle_instance.global_position = point

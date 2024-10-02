@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dq6ipkm5xen5q"]
 
-[ext_resource type="PackedScene" uid="uid://c6ki4ks22iqgu" path="res://assets/meshes/door/doors_window.glb" id="1_a2i24"]
+[ext_resource type="PackedScene" uid="uid://c6ki4ks22iqgu" path="res://addons/BuildingEditor/assets/opening/doors_window.glb" id="1_a2i24"]
 
 [node name="doors_window" instance=ExtResource("1_a2i24")]
 
