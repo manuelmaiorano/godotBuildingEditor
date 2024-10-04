@@ -17,8 +17,14 @@ func _init(_points) -> void:
 
 func gen_array_mesh():
 	mesh = CeilingCreator.create_from_vertices(points)
-	update_collision()
 
+	if material_bottom != null:
+		mesh.surface_set_material(1, material_bottom)
+	
+	if material_top != null:
+		mesh.surface_set_material(0, material_top)
+
+	update_collision()
 		
 
 func update_collision():
@@ -27,6 +33,13 @@ func update_collision():
 		return
 	get_child(0).free()
 	create_trimesh_collision()
+
+func set_material(mat, is_side_bottom = false):
+	if is_side_bottom:
+		material_bottom = mat
+	else:
+		material_top = mat
+	gen_array_mesh()
 
 	
 

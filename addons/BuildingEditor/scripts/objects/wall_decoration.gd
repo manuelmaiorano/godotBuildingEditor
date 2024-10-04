@@ -102,5 +102,3 @@ func has_csgmesh():
 
 func get_csgmesh():
 	return get_node("csgmesh")
-
-

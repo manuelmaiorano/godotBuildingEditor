@@ -81,12 +81,18 @@ func connect_walls(wall1, wall2):
 
 
 class CeilIntercData:
-	var len_along_wall: float
+	var is_side_bottom: bool
+	var pos: Vector3
+	var normal: Vector3
 
 
-func get_ceil_interc_data(wall, raycast_pos, snap_to_grid = false):
+func get_ceil_interc_data(ceiling, raycast_res):
 	var data = CeilIntercData.new()
-
+	data.pos = raycast_res.position
+	data.normal = raycast_res.normal
+	data.is_side_bottom = false
+	if raycast_res.normal.dot(Vector3.UP) < 0:
+		data.is_side_bottom = true
 	return data
 
 class WallIntercData:
@@ -219,6 +225,11 @@ func process_event(event, raycast_result):
 						if coll_parent is Wall:
 							var data = get_wall_interc_data(coll_parent, raycast_result.position)
 							coll_parent.set_material(data.len_along_wall, material_to_paint, data.is_side_out)
+
+							return EditorPlugin.AFTER_GUI_INPUT_STOP
+						if coll_parent is Ceiling:
+							var data = get_ceil_interc_data(coll_parent, raycast_result)
+							coll_parent.set_material(material_to_paint, data.is_side_bottom)
 
 							return EditorPlugin.AFTER_GUI_INPUT_STOP
 						return EditorPlugin.AFTER_GUI_INPUT_PASS
