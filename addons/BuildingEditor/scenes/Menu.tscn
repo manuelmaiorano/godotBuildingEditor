@@ -44,3 +44,9 @@ layout_mode = 2
 toggle_mode = true
 button_group = ExtResource("1_f3d0w")
 text = "Decoration"
+
+[node name="PlaceBtn" type="Button" parent="."]
+layout_mode = 2
+toggle_mode = true
+button_group = ExtResource("1_f3d0w")
+text = "Place Assets"

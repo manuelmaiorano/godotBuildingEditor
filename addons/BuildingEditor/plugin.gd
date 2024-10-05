@@ -1,5 +1,6 @@
 @tool
 extends EditorPlugin
+class_name BuildingEditor
 
 const RAY_LENGTH = 10.0
 var node_to_edit = null
@@ -7,16 +8,29 @@ var import_plugin
 
 var points = []
 var menu
+var dock
+
+
+static var editor: EditorInterface
+static var preview: EditorResourcePreview
 
 const GizmoPlugin = preload("res://addons/BuildingEditor/scripts/gizmos/handles.gd")
 var gizmo_plugin = GizmoPlugin.new()
 
+
 func _enter_tree() -> void:
 	# Initialization of the plugin goes here.
 	#add_custom_type("Wall", "MeshInstance3D", preload("res://addons/BuildingEditor/create_wall.gd"), preload("res://icon.svg"))
+	editor = get_editor_interface()
+	preview = editor.get_resource_previewer()
+
 	import_plugin = preload("res://addons/BuildingEditor/scripts/import_scripts/import_vg.gd").new()
 	add_import_plugin(import_plugin)
 	add_node_3d_gizmo_plugin(gizmo_plugin)
+
+	dock = preload("res://addons/BuildingEditor/scenes/dock/assets_dock.tscn").instantiate()
+	add_control_to_bottom_panel(dock, "Asset Dock")
+
 	if menu:
 		return
 
@@ -40,6 +54,10 @@ func _enter_tree() -> void:
 	menu.get_node("DecorationBtn").toggled.connect( \
 		func(pressed): _on_btn_press(RoomEditor.EDITOR_STATE.DECORATION, pressed))
 
+	menu.get_node("PlaceBtn").toggled.connect( \
+		func(pressed): _on_btn_press(RoomEditor.EDITOR_STATE.PLACE, pressed))
+
+
 	add_control_to_container( \
 		EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, menu)
 	menu.hide()
@@ -52,6 +70,12 @@ func _exit_tree() -> void:
 	remove_import_plugin(import_plugin)
 	import_plugin = null
 	remove_node_3d_gizmo_plugin(gizmo_plugin)
+
+	if dock:
+		remove_control_from_bottom_panel(dock)
+		dock.free()
+		dock = null
+
 	if !menu:
 		return
 
@@ -67,9 +91,11 @@ func _handles(object: Object) -> bool:
 func _edit(object: Object) -> void:
 	if !object:
 		menu.hide()
+		node_to_edit = null
 		return
 	
 	node_to_edit = object
+	dock.connect_signal(node_to_edit._on_asset_changed)
 	menu.show()
 	
 func _forward_3d_gui_input(viewport_camera: Camera3D, event: InputEvent):
@@ -109,3 +135,7 @@ func _on_btn_press(state, pressed):
 		return
 	if pressed:
 		node_to_edit.set_state(state)
+
+
+static func get_preview(scene: String, receiver: Object, function: StringName, data = {}) -> void:
+	preview.queue_resource_preview(scene, receiver, function, data)

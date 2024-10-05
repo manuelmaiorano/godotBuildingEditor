@@ -1,0 +1,22 @@
+[gd_scene load_steps=5 format=3 uid="uid://dngfr0vk5su5w"]
+
+[ext_resource type="Script" path="res://addons/BuildingEditor/scripts/dock/asset_btn.gd" id="1_faled"]
+[ext_resource type="ButtonGroup" uid="uid://destp58njipex" path="res://addons/BuildingEditor/resources/asset_btn_group.tres" id="1_komol"]
+
+[sub_resource type="Gradient" id="Gradient_bsomt"]
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_1kspv"]
+gradient = SubResource("Gradient_bsomt")
+
+[node name="Button" type="Button"]
+custom_minimum_size = Vector2(100, 100)
+offset_right = 100.0
+offset_bottom = 100.0
+toggle_mode = true
+button_group = ExtResource("1_komol")
+text = "desc"
+icon = SubResource("GradientTexture2D_1kspv")
+icon_alignment = 1
+vertical_icon_alignment = 0
+expand_icon = true
+script = ExtResource("1_faled")

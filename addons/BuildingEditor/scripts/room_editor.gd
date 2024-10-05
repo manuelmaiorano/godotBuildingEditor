@@ -3,11 +3,12 @@ extends Node3D
 class_name RoomEditor
 
 
-enum EDITOR_STATE {DRAW, DELETE, CONTINUE, ADD_OPENING, PAINT, DECORATION}
+enum EDITOR_STATE {DRAW, DELETE, CONTINUE, ADD_OPENING, PAINT, DECORATION, PLACE}
 
 const GROUP_WALLS = "walls_%d"
 const GROUP_FLOOR = "floors_%d"
 const GROUP_CEILING = "ceilings_%d"
+const GROUP_ASSETS = "assets_%d"
 
 @onready var points: Array[Vector3] = []
 @onready var wall_instances: Array[Wall] = []
@@ -41,9 +42,22 @@ const GROUP_CEILING = "ceilings_%d"
 @export var curr_decoration: ControllableSurf
 @export var curr_open_scene: PackedScene
 
+var current_asset_scene: PackedScene
+var current_asset = null
+
 var floors = [0]
 
+func _on_asset_changed(path):
+	current_asset_scene = load(path)
+	if current_asset != null:
+		current_asset.free()
+		current_asset = null
+
 func set_state(new_state: EDITOR_STATE):
+	if state == EDITOR_STATE.PLACE:
+		if current_asset != null:
+			current_asset.free()
+			current_asset = null
 	state = new_state
 
 func _process(delta: float) -> void:
@@ -272,6 +286,29 @@ func process_event(event, raycast_result):
 							wall_instance.add_opening(curr_open_scene, data.len_along_wall)
 							return EditorPlugin.AFTER_GUI_INPUT_STOP
 						return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+		EDITOR_STATE.PLACE:
+			if current_asset_scene == null:
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
+			if current_asset == null:
+				current_asset = current_asset_scene.instantiate()
+				add_new_element(current_asset, GROUP_ASSETS % current_floor)
+			if event is InputEventMouse:
+				if event is InputEventMouseMotion:
+					if raycast_result == null:
+						return EditorPlugin.AFTER_GUI_INPUT_PASS
+					var coll_parent = raycast_result.collider.get_parent()
+
+					if coll_parent is Ceiling:
+						current_asset.global_position = raycast_result.position
+						return EditorPlugin.AFTER_GUI_INPUT_PASS
+				if event is InputEventMouseButton and event.pressed:
+					if event.button_index == MOUSE_BUTTON_LEFT:
+						if !raycast_result:
+							return EditorPlugin.AFTER_GUI_INPUT_PASS
+						current_asset = null
+						
+						return EditorPlugin.AFTER_GUI_INPUT_STOP               
 			
 		_:
 			return EditorPlugin.AFTER_GUI_INPUT_PASS
