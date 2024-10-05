@@ -293,6 +293,11 @@ func process_event(event, raycast_result):
 			if current_asset == null:
 				current_asset = current_asset_scene.instantiate()
 				add_new_element(current_asset, GROUP_ASSETS % current_floor)
+			if event is InputEventKey:
+				if event.pressed and event.keycode == KEY_R:
+					if current_asset != null:
+						current_asset.rotate(Vector3.UP, deg_to_rad(45))
+						return EditorPlugin.AFTER_GUI_INPUT_STOP  
 			if event is InputEventMouse:
 				if event is InputEventMouseMotion:
 					if raycast_result == null:
