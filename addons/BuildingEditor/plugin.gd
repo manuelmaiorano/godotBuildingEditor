@@ -8,13 +8,15 @@ var import_plugin
 var points = []
 var menu
 
+const GizmoPlugin = preload("res://addons/BuildingEditor/scripts/gizmos/handles.gd")
+var gizmo_plugin = GizmoPlugin.new()
 
 func _enter_tree() -> void:
 	# Initialization of the plugin goes here.
 	#add_custom_type("Wall", "MeshInstance3D", preload("res://addons/BuildingEditor/create_wall.gd"), preload("res://icon.svg"))
 	import_plugin = preload("res://addons/BuildingEditor/scripts/import_scripts/import_vg.gd").new()
 	add_import_plugin(import_plugin)
-	
+	add_node_3d_gizmo_plugin(gizmo_plugin)
 	if menu:
 		return
 
@@ -49,7 +51,7 @@ func _exit_tree() -> void:
 	#remove_custom_type("Wall")
 	remove_import_plugin(import_plugin)
 	import_plugin = null
-	
+	remove_node_3d_gizmo_plugin(gizmo_plugin)
 	if !menu:
 		return
 

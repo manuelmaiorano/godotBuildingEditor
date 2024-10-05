@@ -49,6 +49,16 @@ func move_vgroup(name, pos: Vector3):
 					verts[idx].z = pos.z
 			uvs[idx] = Vector2(verts[idx].z, verts[idx].y)
 
+
+func translate_vgroup(name, delta: Vector3):
+	for group in vgroups.groups:
+		if group.name != name:
+			continue
+		for idx in verts.size():
+			if idx in group.indices:
+				verts[idx] += delta
+			uvs[idx] = Vector2(verts[idx].z, verts[idx].y)
+
 func translate(pos: Vector3):
 	
 	for idx in verts.size():
