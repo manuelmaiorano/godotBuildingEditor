@@ -122,7 +122,7 @@ func _perform_raycast(screen_pos: Vector2, camera):
 
 	# Perform raycast
 	var space_state = viewport.find_world_3d().direct_space_state
-	var query = PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + ray_direction * ray_length)
+	var query = PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + ray_direction * ray_length, 1)
 	var result = space_state.intersect_ray(query)
 
 	if !result:

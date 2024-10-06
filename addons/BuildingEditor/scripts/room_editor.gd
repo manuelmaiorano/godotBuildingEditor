@@ -4,6 +4,7 @@ class_name RoomEditor
 
 
 enum EDITOR_STATE {DRAW, DELETE, CONTINUE, ADD_OPENING, PAINT, DECORATION, PLACE}
+enum PLACE_MODE {FURNITURE, WALL, CEILING_LAMP}
 
 const GROUP_WALLS = "walls_%d"
 const GROUP_FLOOR = "floors_%d"
@@ -41,6 +42,7 @@ const GROUP_ASSETS = "assets_%d"
 @export var material_to_paint: StandardMaterial3D = null
 @export var curr_decoration: ControllableSurf
 @export var curr_open_scene: PackedScene
+@export var placement_mode: PLACE_MODE = PLACE_MODE.FURNITURE
 
 var current_asset_scene: PackedScene
 var current_asset = null
@@ -303,10 +305,21 @@ func process_event(event, raycast_result):
 					if raycast_result == null:
 						return EditorPlugin.AFTER_GUI_INPUT_PASS
 					var coll_parent = raycast_result.collider.get_parent()
-
-					if coll_parent is Ceiling:
-						current_asset.global_position = raycast_result.position
-						return EditorPlugin.AFTER_GUI_INPUT_PASS
+					match placement_mode:
+						PLACE_MODE.FURNITURE:
+							if coll_parent is Ceiling:
+								current_asset.global_position = raycast_result.position
+								return EditorPlugin.AFTER_GUI_INPUT_PASS
+						PLACE_MODE.WALL:
+							if coll_parent is Wall:
+								current_asset.global_position = raycast_result.position
+								current_asset.global_transform = current_asset.global_transform.looking_at(raycast_result.position+ raycast_result.normal)
+								return EditorPlugin.AFTER_GUI_INPUT_PASS
+						PLACE_MODE.CEILING_LAMP:
+							if coll_parent is Ceiling:
+								current_asset.global_position = raycast_result.position
+								current_asset.global_position.y += height
+								return EditorPlugin.AFTER_GUI_INPUT_PASS
 				if event is InputEventMouseButton and event.pressed:
 					if event.button_index == MOUSE_BUTTON_LEFT:
 						if !raycast_result:

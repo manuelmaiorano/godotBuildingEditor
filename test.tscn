@@ -14,6 +14,7 @@ width = 0.08
 material_to_paint = ExtResource("2_7woo0")
 curr_decoration = ExtResource("3_5agih")
 curr_open_scene = ExtResource("4_ue7r6")
+placement_mode = 2
 
 [node name="collision_helper" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
