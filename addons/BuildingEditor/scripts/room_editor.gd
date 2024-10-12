@@ -4,7 +4,7 @@ class_name RoomEditor
 
 
 enum EDITOR_STATE {DRAW, DELETE, CONTINUE, ADD_OPENING, PAINT, DECORATION, PLACE}
-enum PLACE_MODE {FURNITURE, WALL, CEILING_LAMP}
+enum PLACE_MODE {FURNITURE, WALL, CEILING_LAMP, SNAP}
 
 const GROUP_WALLS = "walls_%d"
 const GROUP_FLOOR = "floors_%d"
@@ -73,7 +73,8 @@ func _process(delta: float) -> void:
 func _on_reset():
 	
 	handle = null
-	$Handle.queue_free()
+	if has_node("Handle"):
+		$Handle.queue_free()
 	points = []
 	wall_instances = []
 	floors = [0]
@@ -139,6 +140,8 @@ func get_wall_interc_data(wall, raycast_pos, snap_to_grid = false):
 	data.bool_origin = tr * Vector3(wall.width/2, 0, rayc_in_tr.z)
 	return data
 	
+var current_transform = Transform3D()
+var step_pos = Vector3()
 
 func process_event(event, raycast_result):
 	match  state:
@@ -297,12 +300,24 @@ func process_event(event, raycast_result):
 				return EditorPlugin.AFTER_GUI_INPUT_PASS
 			if current_asset == null:
 				current_asset = current_asset_scene.instantiate()
+				current_asset.transform = current_transform
 				add_new_element(current_asset, GROUP_ASSETS % current_floor)
 			if event is InputEventKey:
 				if event.pressed and event.keycode == KEY_R:
 					if current_asset != null:
 						current_asset.rotate(Vector3.UP, deg_to_rad(45))
+						
 						return EditorPlugin.AFTER_GUI_INPUT_STOP  
+				if event.pressed and event.keycode == KEY_KP_ADD:
+					if placement_mode == PLACE_MODE.SNAP:
+						var _step_pos = current_asset.transform.origin - current_transform.origin
+						if _step_pos.length_squared() > 0:
+							step_pos = _step_pos
+
+						current_transform.origin += step_pos
+						current_asset = null
+						return EditorPlugin.AFTER_GUI_INPUT_PASS  
+
 			if event is InputEventMouse:
 				if event is InputEventMouseMotion:
 					if raycast_result == null:
@@ -323,10 +338,17 @@ func process_event(event, raycast_result):
 								current_asset.global_position = raycast_result.position
 								current_asset.global_position.y += height
 								return EditorPlugin.AFTER_GUI_INPUT_PASS
+						PLACE_MODE.SNAP:
+							current_asset.global_position = raycast_result.position.snapped(Vector3.ONE * snap_amount)
+							if coll_parent is Wall:
+								#TODO: parent to wall, adjust transform
+								pass
+							return EditorPlugin.AFTER_GUI_INPUT_PASS
 				if event is InputEventMouseButton and event.pressed:
 					if event.button_index == MOUSE_BUTTON_LEFT:
 						if !raycast_result:
 							return EditorPlugin.AFTER_GUI_INPUT_PASS
+						current_transform = current_asset.transform
 						current_asset = null
 						
 						return EditorPlugin.AFTER_GUI_INPUT_STOP               
