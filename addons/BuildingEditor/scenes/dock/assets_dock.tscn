@@ -11,7 +11,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_203xp")
 
-[node name="ScrollContainer" type="ScrollContainer" parent="."]
+[node name="HSplitContainer" type="HSplitContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -19,7 +19,41 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="HFlowContainer" type="HFlowContainer" parent="ScrollContainer"]
+[node name="PanelContainer" type="PanelContainer" parent="HSplitContainer"]
+custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer/PanelContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HSplitContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Materials Path"
+
+[node name="materialsTxtEdit" type="LineEdit" parent="HSplitContainer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="HSplitContainer/PanelContainer/VBoxContainer"]
+layout_mode = 2
+text = "Scenes Path"
+
+[node name="scenesTxtEdit" type="LineEdit" parent="HSplitContainer/PanelContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+
+[node name="TabContainer" type="TabContainer" parent="HSplitContainer"]
+layout_mode = 2
+current_tab = 0
+
+[node name="Scenes" type="TabContainer" parent="HSplitContainer/TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="Materials" type="TabContainer" parent="HSplitContainer/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[connection signal="text_submitted" from="HSplitContainer/PanelContainer/VBoxContainer/materialsTxtEdit" to="." method="_on_mats_path_set"]
+[connection signal="text_submitted" from="HSplitContainer/PanelContainer/VBoxContainer/scenesTxtEdit" to="." method="_on_scenes_path_set"]

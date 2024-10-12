@@ -39,17 +39,20 @@ const GROUP_ASSETS = "assets_%d"
 		show_ceiling = value
 		show_hide_ceiling(current_floor, value)
 
-@export var material_to_paint: StandardMaterial3D = null
 @export var curr_decoration: ControllableSurf
 @export var curr_open_scene: PackedScene
 @export var placement_mode: PLACE_MODE = PLACE_MODE.FURNITURE
 
 var current_asset_scene: PackedScene
+var material_to_paint: StandardMaterial3D
 var current_asset = null
 
 var floors = [0]
 
 func _on_asset_changed(path):
+	if path.contains(".tres"):
+		material_to_paint = load(path)
+		return
 	current_asset_scene = load(path)
 	if current_asset != null:
 		current_asset.free()

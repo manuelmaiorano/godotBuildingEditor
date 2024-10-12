@@ -1,9 +1,10 @@
-[gd_scene load_steps=6 format=3 uid="uid://vbgylgxm2qvq"]
+[gd_scene load_steps=7 format=3 uid="uid://vbgylgxm2qvq"]
 
 [ext_resource type="Script" path="res://addons/BuildingEditor/scripts/room_editor.gd" id="1_pqaas"]
-[ext_resource type="Material" uid="uid://ctnlo5p2hvhph" path="res://addons/BuildingEditor/assets/materials/Material.001.tres" id="2_7woo0"]
 [ext_resource type="Resource" uid="uid://dctqm8jdcmjwj" path="res://addons/BuildingEditor/resources/controllableMeshes/baseboard.res" id="3_5agih"]
 [ext_resource type="PackedScene" uid="uid://dq6ipkm5xen5q" path="res://addons/BuildingEditor/scenes/opening/door.tscn" id="4_ue7r6"]
+[ext_resource type="PackedScene" uid="uid://b1o61glif6eqo" path="res://addons/BuildingEditor/scenes/gizmos/handle.tscn" id="5_lahum"]
+[ext_resource type="Script" path="res://addons/BuildingEditor/scripts/handle.gd" id="6_yejfo"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qd7s4"]
 size = Vector3(20, 0.3, 20)
@@ -11,7 +12,6 @@ size = Vector3(20, 0.3, 20)
 [node name="Node3D" type="Node3D"]
 script = ExtResource("1_pqaas")
 width = 0.08
-material_to_paint = ExtResource("2_7woo0")
 curr_decoration = ExtResource("3_5agih")
 curr_open_scene = ExtResource("4_ue7r6")
 placement_mode = 2
@@ -24,3 +24,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
 shape = SubResource("BoxShape3D_qd7s4")
 
 [node name="generated" type="Node3D" parent="."]
+
+[node name="@Marker3D@160580" type="Marker3D" parent="." instance=ExtResource("5_lahum")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -9.5, 0, 0.5)
+script = ExtResource("6_yejfo")
