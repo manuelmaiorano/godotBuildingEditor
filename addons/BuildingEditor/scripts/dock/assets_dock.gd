@@ -3,22 +3,27 @@ extends Control
 
 signal asset_changed(asset_path)
 
-var scenes_path: String = ""
-var materials_path: String = ""
+var scenes_path: String = ResourceLoader.load( "res://addons/BuildingEditor/resources/paths/scenes_path.res").asset_path
+var materials_path: String = ResourceLoader.load( "res://addons/BuildingEditor/resources/paths/materials_path.res").asset_path
 var btn_group: ButtonGroup = preload("res://addons/BuildingEditor/scenes/button_group.tres")
 
 var mat_tab
 var scenes_tab
 
 func _ready() -> void:
-	create_tabs(scenes_path)
-	create_tabs(materials_path, false)
 	mat_tab = $HSplitContainer/TabContainer/Materials
 	scenes_tab = $HSplitContainer/TabContainer/Scenes
+	
+	print(scenes_path)
+	print(materials_path)
+	$HSplitContainer/PanelContainer/VBoxContainer/materialsTxtEdit.text = materials_path
+	$HSplitContainer/PanelContainer/VBoxContainer/scenesTxtEdit.text = scenes_path
 	btn_group.pressed.connect(_on_pressed)
+	create_tabs(scenes_path)  
+	create_tabs(materials_path, false)
 
 func _on_pressed(btn):
-	if scenes_tab == null:
+	if scenes_path == "" or materials_path == "":
 		return
 	var tab_name = ""
 	if $HSplitContainer/TabContainer.current_tab == 0:
@@ -56,6 +61,8 @@ func connect_signal(callable):
 
 func _on_scenes_path_set(txt) -> void:
 	scenes_path = txt
+	var sc_path = PathResource.new(txt)
+	ResourceSaver.save(sc_path, "res://addons/BuildingEditor/resources/paths/scenes_path.res")
 	print(scenes_path)
 	for child in $HSplitContainer/TabContainer/Scenes.get_children():
 		child.free()
@@ -65,6 +72,8 @@ func _on_scenes_path_set(txt) -> void:
 
 func _on_mats_path_set(txt) -> void:
 	materials_path = txt
+	var mat_path = PathResource.new(txt)
+	ResourceSaver.save(mat_path, "res://addons/BuildingEditor/resources/paths/materials_path.res")
 	for child in $HSplitContainer/TabContainer/Materials.get_children():
 		child.free()
 

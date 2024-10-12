@@ -16,7 +16,6 @@ func create_tab() -> void:
 		var file_name = dir.get_next()
 		while file_name != "":
 			if file_name.contains(extension):
-				print("Found file: " + dir_path + file_name)
 				BuildingEditor.get_preview(dir_path + file_name, self, "create_asset_button", file_name)
 			file_name = dir.get_next()
 
