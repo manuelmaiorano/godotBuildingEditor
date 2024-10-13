@@ -31,6 +31,9 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, 0, -5.5)
 [node name="@Marker3D@48273" parent="." instance=ExtResource("4_t14hi")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 0, -8.5)
 
+[node name="@Marker3D@18066" parent="." instance=ExtResource("4_t14hi")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2, 2.5, -4)
+
 [node name="Handle" type="Marker3D" parent="." instance=ExtResource("4_t14hi")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5, 0, 3.5)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.5, 0, -9.5)
 script = ExtResource("5_jeomn")

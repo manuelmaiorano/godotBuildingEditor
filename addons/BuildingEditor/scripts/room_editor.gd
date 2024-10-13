@@ -41,7 +41,11 @@ const GROUP_ASSETS = "assets_%d"
 
 @export var curr_decoration: ControllableSurf
 @export var curr_open_scene: PackedScene
-@export var placement_mode: PLACE_MODE = PLACE_MODE.FURNITURE
+@export var placement_mode: PLACE_MODE = PLACE_MODE.FURNITURE :
+	set(value):
+		if placement_mode == PLACE_MODE.SNAP:
+			current_parent = null
+		placement_mode = value
 
 var current_asset_scene: PackedScene
 var material_to_paint: StandardMaterial3D
@@ -142,6 +146,7 @@ func get_wall_interc_data(wall, raycast_pos, snap_to_grid = false):
 	
 var current_transform = Transform3D()
 var step_pos = Vector3()
+var current_parent = null
 
 func process_event(event, raycast_result):
 	match  state:
@@ -300,8 +305,8 @@ func process_event(event, raycast_result):
 				return EditorPlugin.AFTER_GUI_INPUT_PASS
 			if current_asset == null:
 				current_asset = current_asset_scene.instantiate()
+				add_new_element(current_asset, GROUP_ASSETS % current_floor, current_parent)
 				current_asset.transform = current_transform
-				add_new_element(current_asset, GROUP_ASSETS % current_floor)
 			if event is InputEventKey:
 				if event.pressed and event.keycode == KEY_R:
 					if current_asset != null:
@@ -342,12 +347,28 @@ func process_event(event, raycast_result):
 							current_asset.global_position = raycast_result.position.snapped(Vector3.ONE * snap_amount)
 							if coll_parent is Wall:
 								#TODO: parent to wall, adjust transform
-								pass
+								var data = get_wall_interc_data(coll_parent, raycast_result.position)
+								current_asset.reparent(coll_parent)
+								current_parent = coll_parent
+								current_asset.transform = Transform3D()
+								current_asset.global_position = raycast_result.position.snapped(Vector3.ONE * snap_amount)
+								if not data.is_side_out:
+									current_asset.transform.origin.x = coll_parent.width
+								else: 
+									current_asset.rotate(Vector3.UP, deg_to_rad(180))
+									current_asset.transform.origin.x = 0
 							return EditorPlugin.AFTER_GUI_INPUT_PASS
 				if event is InputEventMouseButton and event.pressed:
 					if event.button_index == MOUSE_BUTTON_LEFT:
 						if !raycast_result:
 							return EditorPlugin.AFTER_GUI_INPUT_PASS
+						var coll_parent = raycast_result.collider.get_parent()
+						if not (coll_parent is Wall) and current_parent != null:
+							current_asset.reparent(get_node("generated"))
+							current_transform = current_asset.global_transform
+							current_asset = null
+							current_parent = null
+							return EditorPlugin.AFTER_GUI_INPUT_STOP 
 						current_transform = current_asset.transform
 						current_asset = null
 						
@@ -427,8 +448,11 @@ func create_ceiling(points):
 	add_new_element(ceiling, GROUP_CEILING % current_floor)
 	return ceiling
 
-func add_new_element(elem, group = null):
-	get_node("generated").add_child(elem)
+func add_new_element(elem, group = null, parent = null):
+	if parent != null:
+		parent.add_child(elem)
+	else:
+		get_node("generated").add_child(elem)
 	elem.set_owner(self)
 	if group != null:
 		elem.add_to_group(group)
