@@ -82,4 +82,27 @@ func shear_vgroup(name, angle_deg: float):
 		for idx in verts.size():
 			if idx in group.indices:
 				verts[idx].z = 0
+
+
+func has_group(vg_name):
+	for vg in vgroups.groups:
+		if vg.name == vg_name:
+			return true
+
+	return false
+
+
+
+func get_handle_pt(vg_name):
+	var sum = Vector3()
+	var len = 0
+	for vg in vgroups.groups:
+		if vg.name == vg_name:
+			len = vg.indices.size()
+			for idx in verts.size():
+				if idx in vg.indices:
+					sum += verts[idx]
+
+
+	return sum/len
 		

@@ -14,7 +14,7 @@ var dock
 static var editor: EditorInterface
 static var preview: EditorResourcePreview
 
-const GizmoPlugin = preload("res://addons/BuildingEditor/scripts/gizmos/handles.gd")
+const GizmoPlugin = preload("res://addons/BuildingEditor/scripts/gizmos/controllable_mesh_handles.gd")
 var gizmo_plugin = GizmoPlugin.new()
 
 
