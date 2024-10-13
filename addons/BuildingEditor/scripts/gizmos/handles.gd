@@ -1,9 +1,5 @@
 extends EditorNode3DGizmoPlugin
 
-var arrow_mesh = preload("res://addons/BuildingEditor/assets/gizmos/arrow.res")
-var arrow_mat = preload("res://addons/BuildingEditor/assets/gizmos/arrow_mat.tres")
-
-
 
 func _get_gizmo_name():
 	return "ControlHandles"
@@ -22,10 +18,6 @@ func _init():
 func _redraw(gizmo):
 	gizmo.clear()
 	var roof = gizmo.get_node_3d()
-	# var transform = Transform3D()
-	# transform.origin = Vector3(  (roof.front + roof.back)/2, 0, roof.currentz)
-	# gizmo.add_mesh(arrow_mesh, arrow_mat, transform )
-	# gizmo.add_collision_triangles(arrow_mesh)
 	
 	var handles = PackedVector3Array()
 	handles.push_back(Vector3((roof.back+roof.front)/2, roof.height, 0))
