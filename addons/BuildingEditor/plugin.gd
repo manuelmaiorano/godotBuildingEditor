@@ -118,7 +118,7 @@ func _perform_raycast(screen_pos: Vector2, camera):
 	var ray_direction = camera.project_ray_normal(screen_pos)
 
 	# Define the maximum ray distance
-	var ray_length = 1000.0
+	var ray_length = 4096.0
 
 	# Perform raycast
 	var space_state = viewport.find_world_3d().direct_space_state

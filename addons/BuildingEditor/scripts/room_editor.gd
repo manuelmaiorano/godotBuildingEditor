@@ -168,6 +168,8 @@ func process_event(event, raycast_result):
 					return EditorPlugin.AFTER_GUI_INPUT_PASS
 				var point = raycast_result.position
 				var snapped_point = snap_point(point, true, true)
+				if Input.is_key_pressed(KEY_CTRL):
+					snapped_point = snap_point(point, false, true)
 				var coll_parent = raycast_result.collider.get_parent()
 				if coll_parent is Ceiling or raycast_result.collider.name == "collision_helper":
 					snapped_point.y =  current_floor * height
