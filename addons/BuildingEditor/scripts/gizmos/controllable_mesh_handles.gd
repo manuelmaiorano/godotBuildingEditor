@@ -7,7 +7,7 @@ func _get_gizmo_name():
 
 
 func _has_gizmo(node):
-	return node is GenericMesh
+	return node is GenericMesh or node is Wall
 
 
 func _init():
@@ -17,13 +17,13 @@ func _init():
 
 func _redraw(gizmo):
 	gizmo.clear()
-	var cmesh = gizmo.get_node_3d().cmesh	
+	var node = gizmo.get_node_3d()	
 	var handles = PackedVector3Array()
 	var indices = []
 	var i = 0
 
-	for vg in cmesh.vgroups.groups:
-		var pt = cmesh.get_handle_point(vg.name)
+	for vg in node.get_vgroups():
+		var pt = node.get_handle_point(vg.name)
 		handles.push_back(pt)
 		indices.append(i)
 		i += 1
@@ -33,20 +33,20 @@ func _redraw(gizmo):
 
 
 func _get_handle_name(gizmo, handle_id, secondary):
-	var cmesh: ControllableMesh = gizmo.get_node_3d().cmesh
-	return cmesh.vgroups.groups[handle_id].name
+	var node = gizmo.get_node_3d()
+	return node.get_handle_name(handle_id)
 
 func _get_handle_value(gizmo, handle_id, secondary):
-	var cmesh: ControllableMesh = gizmo.get_node_3d().cmesh
-	return cmesh.get_handle_point(cmesh.vgroups.groups[handle_id].name)
+	var node = gizmo.get_node_3d()
+	return node.get_handle_point(node.get_handle_name(handle_id))
 
 func _set_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, camera: Camera3D, screen_pos: Vector2):
 	
 	var axis := Vector3.ZERO
 
-	var cmesh = gizmo.get_node_3d().cmesh
-	var vg_name = cmesh.vgroups.groups[handle_id].name
-	var pt = cmesh.get_handle_point(cmesh.vgroups.groups[handle_id].name)
+	var node = gizmo.get_node_3d()
+	var vg_name = node.get_handle_name(handle_id)
+	var pt = node.get_handle_point(vg_name)
 
 	if vg_name.contains("mz"):
 		axis[1] = -1.0
@@ -60,9 +60,12 @@ func _set_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, came
 		axis[0] = 1.0
 	elif vg_name.contains("y"):
 		axis[2] = 1.0
+	elif node is Wall:
+		axis[1] = 1.0
+	else:
+		return
 
-	var n = gizmo.get_node_3d()
-	var gt := n.get_global_transform()
+	var gt := node.get_global_transform()
 	var gt_inverse := gt.affine_inverse()
 
 	var origin := gt.origin
@@ -72,9 +75,13 @@ func _set_handle(gizmo: EditorNode3DGizmo, handle_id: int, secondary: bool, came
 
 	var points = Geometry3D.get_closest_points_between_segments(origin, drag_axis, ray_from, ray_to)
 
+	var pt_on_axis =  gt_inverse * points[0]
+
+	pt_on_axis = pt_on_axis.snapped(Vector3.ONE * 0.25)
+
 	if axis.x + axis.y + axis.z < 0:
-		n.translate_vgroup(vg_name, points[0] + pt * axis )
+		node.translate_vgroup(vg_name, pt_on_axis + pt * axis )
 	else:
-		n.translate_vgroup(vg_name, points[0] - pt * axis )
-	n.update_gizmos()
+		node.translate_vgroup(vg_name, pt_on_axis - pt * axis )
+	node.update_gizmos()
 	

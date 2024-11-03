@@ -59,6 +59,17 @@ func translate_vgroup(name, delta: Vector3):
 				verts[idx] += delta
 			uvs[idx] = Vector2(verts[idx].z, verts[idx].y)
 
+
+func seth_vgroup(name, value: float):
+	for group in vgroups.groups:
+		if group.name != name:
+			continue
+		for idx in verts.size():
+			if idx in group.indices:
+				if not is_zero_approx(verts[idx].y):
+					verts[idx].y = value
+			uvs[idx] = Vector2(verts[idx].z, verts[idx].y)
+
 func translate(pos: Vector3):
 	
 	for idx in verts.size():

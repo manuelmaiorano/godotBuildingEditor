@@ -57,6 +57,9 @@ func _enter_tree() -> void:
 	menu.get_node("PlaceBtn").toggled.connect( \
 		func(pressed): _on_btn_press(RoomEditor.EDITOR_STATE.PLACE, pressed))
 
+	menu.get_node("SplitBtn").toggled.connect( \
+		func(pressed): _on_btn_press(RoomEditor.EDITOR_STATE.SPLIT, pressed))
+
 
 	add_control_to_container( \
 		EditorPlugin.CONTAINER_SPATIAL_EDITOR_SIDE_LEFT, menu)

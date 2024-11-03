@@ -26,3 +26,13 @@ func update_mesh():
 		surface_array[Mesh.ARRAY_INDEX] =  surf.indices
 		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array)
 	update_gizmos()
+
+func get_vgroups():
+	return cmesh.vgroups.groups
+
+func get_handle_point(vg_name):
+	return cmesh.get_handle_point(vg_name)
+
+
+func get_handle_name(handle_id):
+	return cmesh.vgroups.groups[handle_id].name

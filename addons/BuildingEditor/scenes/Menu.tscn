@@ -27,6 +27,12 @@ toggle_mode = true
 button_group = ExtResource("1_f3d0w")
 text = "Continue"
 
+[node name="SplitBtn" type="Button" parent="."]
+layout_mode = 2
+toggle_mode = true
+button_group = ExtResource("1_f3d0w")
+text = "Split Wall"
+
 [node name="OpeningBtn" type="Button" parent="."]
 layout_mode = 2
 toggle_mode = true

@@ -3,7 +3,7 @@ extends Node3D
 class_name RoomEditor
 
 
-enum EDITOR_STATE {DRAW, DELETE, CONTINUE, ADD_OPENING, PAINT, DECORATION, PLACE}
+enum EDITOR_STATE {DRAW, DELETE, CONTINUE, SPLIT, ADD_OPENING, PAINT, DECORATION, PLACE}
 enum PLACE_MODE {FURNITURE, WALL, CEILING_LAMP, SNAP}
 
 const GROUP_WALLS = "walls_%d"
@@ -18,7 +18,7 @@ const GROUP_ASSETS = "assets_%d"
 
 @export var reset = false
 
-@export var height = 2.4
+@export var height = 2.5
 @export var width = 0.2
 
 @export var snap_amount = 0.5
@@ -207,6 +207,7 @@ func process_event(event, raycast_result):
 						if wall_instances.size() >= 2:
 							connect_walls(wall_instances.back(), wall_instances[wall_instances.size()-2])
 						return EditorPlugin.AFTER_GUI_INPUT_STOP
+
 		EDITOR_STATE.DELETE:
 			if event is InputEventMouse:
 				if event is InputEventMouseButton and event.pressed:
@@ -240,6 +241,33 @@ func process_event(event, raycast_result):
 							state = EDITOR_STATE.DRAW
 							return EditorPlugin.AFTER_GUI_INPUT_STOP
 						return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+		EDITOR_STATE.SPLIT:
+			if event is InputEventMouse:
+				if !raycast_result:
+					return EditorPlugin.AFTER_GUI_INPUT_PASS
+				var point = raycast_result.position
+				var snapped_point = snap_point(point, true, true)
+				if Input.is_key_pressed(KEY_CTRL):
+					snapped_point = snap_point(point, false, true)
+				var coll_parent = raycast_result.collider.get_parent()
+				if coll_parent is Ceiling or raycast_result.collider.name == "collision_helper":
+					snapped_point.y =  current_floor * height
+				
+				if event is InputEventMouseMotion:
+					update_gizmo(snapped_point)
+					return EditorPlugin.AFTER_GUI_INPUT_PASS
+				elif event is InputEventMouseButton and event.pressed:
+					if event.button_index == MOUSE_BUTTON_LEFT:
+						if coll_parent is Wall:
+							var wall: Wall = coll_parent
+
+							var data: WallIntercData = get_wall_interc_data(coll_parent, raycast_result.position, true)
+							update_gizmo(data.point_at_bottom)
+							
+							wall.add_split_len(data.len_along_wall, data.is_side_out)
+							
+						return EditorPlugin.AFTER_GUI_INPUT_STOP
 
 		EDITOR_STATE.PAINT:
 			if material_to_paint == null:

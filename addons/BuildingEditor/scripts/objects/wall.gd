@@ -13,6 +13,8 @@ class WallConnection:
 var surfaces : Array[ControllableSurf] = []
 var split_pts_in: Array[float] = []
 var split_pts_out: Array[float] = []
+var h_pts_in: Array[float] = []
+var h_pts_out: Array[float] = []
 var width = 0.2
 var height = 2.4
 
@@ -29,6 +31,8 @@ var wall_connected: Array[WallConnection]
 func _init() -> void:
 	split_pts_in = [0, 1]
 	split_pts_out = [0, 1]
+	h_pts_in = [height, height]
+	h_pts_out = [height, height]
 	materials_in = [StandardMaterial3D.new()]
 	materials_out = [StandardMaterial3D.new()]
 	decorations_in = [[]]
@@ -78,9 +82,11 @@ func gen_border():
 		
 func gen_wall(out = false):
 	var split_pts = split_pts_in
+	var h_vals = h_pts_in
 	var msh = wall_in_mesh
 	if out:
 		split_pts = split_pts_out
+		h_vals = h_pts_out
 		msh = wall_out_mesh
 	for idx in range(1, split_pts.size()):
 		
@@ -89,6 +95,10 @@ func gen_wall(out = false):
 		var dict = {"c1": Vector3(0, 0, c1), "c2": Vector3(0, 0, c2), "w": Vector3(width, 0, 0), "h": Vector3(0, height, 0)}
 				
 		var surf = msh.gen_new_surf(dict)
+
+		surf.seth_vgroup("c1", h_vals[idx-1])
+		surf.seth_vgroup("c2", h_vals[idx])
+
 		surfaces.append(surf)
 
 func update_dec(out = false):
@@ -120,14 +130,17 @@ func add_split_len(pt, out = false):
 	var arr = split_pts_in
 	var mat_arr = materials_in
 	var dec_arr = decorations_in
+	var h_arr = h_pts_in
 	if out:
 		arr = split_pts_out
 		mat_arr = materials_out
 		dec_arr = decorations_out
+		h_arr = h_pts_out
 		
 	for idx in arr.size():
 		if arr[idx] < pt:
 			arr.insert(idx, pt)
+			h_arr.insert(idx, height)
 			break
 	mat_arr.append(StandardMaterial3D.new())
 	dec_arr.append([])
@@ -313,7 +326,40 @@ func get_static_body():
 			return child
 	return null
 
+################################################
 
-	
-	
+func translate_vgroup(vgroup, vec: Vector3):
+	var allpts = split_pts_in + split_pts_out
+	var idx = int(vgroup)
+	if idx < split_pts_in.size():
+		h_pts_in[idx] += vec.y
+	else :
+		h_pts_out[idx-split_pts_in.size()] += vec.y
+
+	gen_array_mesh()
+
+
+func get_vgroups():
+	var allpts = split_pts_in + split_pts_out
+	var vgs = []
+	for idx in allpts.size():
+		var vg = VertexGroup.new()
+		vg.name = str(idx)
+		vgs.append(vg)
+	return vgs
+
+func get_handle_point(vg_name):
+	var allpts = split_pts_in + split_pts_out
+	var idx = int(vg_name)
+	var pt 
+	if idx < split_pts_in.size():
+		pt = Vector3(width, h_pts_in[idx], split_pts_in[idx])
+	else:
+		idx -= split_pts_in.size()
+		pt = Vector3(0, h_pts_out[idx], split_pts_out[idx])
+	return pt
+
+
+func get_handle_name(handle_id):
+	return str(handle_id)
 	
