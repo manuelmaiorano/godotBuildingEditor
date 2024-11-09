@@ -21,13 +21,15 @@ const GROUP_ASSETS = "assets_%d"
 @export var height = 2.5
 @export var width = 0.2
 
+var floor_width = 0.3
+
 @export var snap_amount = 0.5
 @export var current_floor: int = 0 :
 	set(value):
 		if not floors.has(value):
 			floors.append(value)
 		current_floor = value
-		get_node("collision_helper").global_position.y = value * height - 0.3/2
+		get_node("collision_helper").global_position.y = value * height - floor_width/2
 		
 		hide_upper_floors(value)
 		show_lower_floors(value)
@@ -67,6 +69,12 @@ func set_state(new_state: EDITOR_STATE):
 		if current_asset != null:
 			current_asset.free()
 			current_asset = null
+	# elif state == EDITOR_STATE.DRAW:
+	# 	get_node("collision_helper").get_child(0).disabled = false
+	# 	get_node("collision_helper").position = get_node("collision_helper").position
+	# elif state == EDITOR_STATE.PAINT or state == EDITOR_STATE.PLACE:
+	# 	get_node("collision_helper").get_child(0).disabled = true
+	# 	get_node("collision_helper").position = get_node("collision_helper").position
 	state = new_state
 
 func _process(delta: float) -> void:
@@ -285,8 +293,7 @@ func process_event(event, raycast_result):
 
 							return EditorPlugin.AFTER_GUI_INPUT_STOP
 						if coll_parent is Ceiling:
-							var data = get_ceil_interc_data(coll_parent, raycast_result)
-							coll_parent.set_material(material_to_paint, data.is_side_bottom)
+							coll_parent.set_material(material_to_paint)
 
 							return EditorPlugin.AFTER_GUI_INPUT_STOP
 						return EditorPlugin.AFTER_GUI_INPUT_PASS
@@ -360,7 +367,7 @@ func process_event(event, raycast_result):
 					var coll_parent = raycast_result.collider.get_parent()
 					match placement_mode:
 						PLACE_MODE.FURNITURE:
-							if coll_parent is Ceiling:
+							if coll_parent is Ceiling or raycast_result.collider.name == "collision_helper":
 								current_asset.global_position = raycast_result.position
 								return EditorPlugin.AFTER_GUI_INPUT_PASS
 						PLACE_MODE.WALL:
@@ -447,7 +454,7 @@ func create_marker(point):
 	handle_instance.global_position = point
 		
 func create_wall(pointA, pointB):
-	var wall_instance = Wall.new()
+	var wall_instance = Wall.new(height)
 	add_new_element(wall_instance, GROUP_WALLS % current_floor)
 	
 	wall_instance.transform = Transform3D().looking_at(pointB - pointA)
@@ -463,7 +470,7 @@ func create_floor(points):
 	for point in points:
 		vertices.append(Vector3(point))
 
-	var floor = Ceiling.new(points)
+	var floor = Ceiling.new(points, false)
 	add_new_element(floor, GROUP_FLOOR % current_floor)
 	
 	return floor
@@ -474,7 +481,7 @@ func create_ceiling(points):
 	for point in points:
 		vertices.append(Vector3(point))
 
-	var ceiling = Ceiling.new(points)
+	var ceiling = Ceiling.new(points, true)
 	add_new_element(ceiling, GROUP_CEILING % current_floor)
 	return ceiling
 
@@ -535,7 +542,7 @@ func show_lower_floors(number):
 		
 
 func show_hide_ceiling(number, show):
-	for elem in get_tree().get_nodes_in_group(GROUP_CEILING % number):
+	for elem in get_tree().get_nodes_in_group(GROUP_CEILING % number) + get_tree().get_nodes_in_group(GROUP_FLOOR % number):
 		if not show:
 			elem.hide()
 			elem.set_collision(true)
@@ -557,8 +564,8 @@ func create_floors():
 		
 		if GEOMETRY_UTILS.isClockwise(polygon):
 			cycle.reverse()
-		if current_floor == 0:
-			var floor = create_floor(cycle)
+		
+		var floor = create_floor(cycle)
 		var ceiling = create_ceiling(cycle)
 		ceiling.global_position.y =  height
 		# add_new_element(room)

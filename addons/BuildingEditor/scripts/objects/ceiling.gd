@@ -4,46 +4,74 @@ class_name Ceiling
 
 
 
-var material_top = null
-var material_bottom = null
+var material
 var points = []
 
 
 var csgmesh = null
+var isTop = false
 
-func _init(_points) -> void:
+func _init(_points, _isTop) -> void:
 	points = _points
-	gen_array_mesh()
+	isTop = _isTop
+	material = StandardMaterial3D.new()
+	gen_array_mesh(isTop)
 
-func gen_array_mesh():
-	mesh = CeilingCreator.create_from_vertices(points)
+func gen_array_mesh(isTop):
+	mesh = CeilingCreator.create_from_vertices(points, isTop)
 
-	if material_bottom != null:
-		mesh.surface_set_material(1, material_bottom)
-	
-	if material_top != null:
-		mesh.surface_set_material(0, material_top)
-
+	mesh.surface_set_material(0, material)
 	update_collision()
 		
 
+
+func set_material(mat):
+	material = mat
+	gen_array_mesh(isTop)
+
+
 func update_collision():
-	if get_children().size() == 0:
+	if has_csgmesh():
+		return
+	var st_body = get_static_body()
+	if st_body == null:
+		print("kjvkhvk")
 		create_trimesh_collision()
 		return
-	get_child(0).free()
+	st_body.free()
+	print("ewrcevr")
 	create_trimesh_collision()
 
-func set_material(mat, is_side_bottom = false):
-	if is_side_bottom:
-		material_bottom = mat
-	else:
-		material_top = mat
-	gen_array_mesh()
-
-	
-
 func set_collision(disabled):
-	get_child(0).get_child(0).disabled = disabled
+	if has_csgmesh():
+		get_csgmesh().use_collision = not disabled
+		return
 
-	
+	var st_body = get_static_body()
+	st_body.get_child(0).disabled = disabled
+	if not disabled:
+		update_collision()
+
+
+func has_csgmesh():
+	return has_node("csgmesh")
+
+
+func get_booleans():
+	var booleans = []
+	if has_csgmesh():
+		var csgmesh = get_csgmesh()
+		for elem in csgmesh.get_children():
+			if elem is CSGPrimitive3D:
+				booleans.append(elem)
+
+	return booleans
+
+func get_csgmesh():
+	return get_node("csgmesh")
+
+func get_static_body():
+	for child in get_children():
+		if child is StaticBody3D:
+			return child
+	return null

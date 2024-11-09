@@ -1,12 +1,12 @@
 extends Node
 class_name CeilingCreator
 
-static  func create_from_vertices(vertices: PackedVector3Array):
+static  func create_from_vertices(vertices: PackedVector3Array, isTop=true):
 	var height = vertices[0].y
 	var points2d = PackedVector2Array();
 	for vertex in vertices:
 		points2d.append(Vector2(vertex.x, vertex.z))
-	print(points2d)
+
 	var triangles = Triangulation.triangulate(points2d)
 	
 	var verts = vertices
@@ -29,16 +29,16 @@ static  func create_from_vertices(vertices: PackedVector3Array):
 					indices.append(idx)
 	#top
 	var mesh = ArrayMesh.new()
-	var surface_array_top = []
-	surface_array_top.resize(Mesh.ARRAY_MAX)
-	surface_array_top[Mesh.ARRAY_VERTEX] = verts
-	surface_array_top[Mesh.ARRAY_TEX_UV] = uvs
-	surface_array_top[Mesh.ARRAY_NORMAL] = normals
-	surface_array_top[Mesh.ARRAY_INDEX] = indices
-	
-	print(indices)
-	mesh = ArrayMesh.new()
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array_top)
+	if not isTop:
+		var surface_array_top = []
+		surface_array_top.resize(Mesh.ARRAY_MAX)
+		surface_array_top[Mesh.ARRAY_VERTEX] = verts
+		surface_array_top[Mesh.ARRAY_TEX_UV] = uvs
+		surface_array_top[Mesh.ARRAY_NORMAL] = normals
+		surface_array_top[Mesh.ARRAY_INDEX] = indices
+		
+		mesh = ArrayMesh.new()
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array_top)
 	
 	#border
 	# var surface_array_border = []
@@ -71,24 +71,25 @@ static  func create_from_vertices(vertices: PackedVector3Array):
 	# mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array_border)
 	
 	#bottom
-	var surface_array_bottom = []
-	surface_array_bottom.resize(Mesh.ARRAY_MAX)
-	var bottom_vertices = PackedVector3Array()
-	var bottom_indices = PackedInt32Array()
-	for vert in vertices:
-		bottom_vertices.append(Vector3(vert.x, vert.y - 0.2, vert.z))
-	for idx in indices.size()/3:
-		bottom_indices.append(indices[idx*3+2])
-		bottom_indices.append(indices[idx*3+1])
-		bottom_indices.append(indices[idx*3])
+	else:
+		var surface_array_bottom = []
+		surface_array_bottom.resize(Mesh.ARRAY_MAX)
+		var bottom_vertices = PackedVector3Array()
+		var bottom_indices = PackedInt32Array()
+		for vert in vertices:
+			bottom_vertices.append(Vector3(vert.x, vert.y - 0.2, vert.z))
+		for idx in indices.size()/3:
+			bottom_indices.append(indices[idx*3+2])
+			bottom_indices.append(indices[idx*3+1])
+			bottom_indices.append(indices[idx*3])
+			
 		
+		surface_array_bottom[Mesh.ARRAY_VERTEX] = bottom_vertices
+		surface_array_bottom[Mesh.ARRAY_TEX_UV] = uvs
+		surface_array_bottom[Mesh.ARRAY_NORMAL] = normalsf
+		surface_array_bottom[Mesh.ARRAY_INDEX] = bottom_indices
 	
-	surface_array_bottom[Mesh.ARRAY_VERTEX] = bottom_vertices
-	surface_array_bottom[Mesh.ARRAY_TEX_UV] = uvs
-	surface_array_bottom[Mesh.ARRAY_NORMAL] = normalsf
-	surface_array_bottom[Mesh.ARRAY_INDEX] = bottom_indices
-	
-	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array_bottom)
+		mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_array_bottom)
 	mesh.regen_normal_maps()
 	
 	return mesh

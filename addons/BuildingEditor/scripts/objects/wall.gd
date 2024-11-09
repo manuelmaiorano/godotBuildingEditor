@@ -16,7 +16,7 @@ var split_pts_out: Array[float] = []
 var h_pts_in: Array[float] = []
 var h_pts_out: Array[float] = []
 var width = 0.2
-var height = 2.4
+var height = 2.5
 
 var materials_in = []
 var materials_out = []
@@ -28,7 +28,8 @@ var csgmesh = null
 
 var wall_connected: Array[WallConnection]
 
-func _init() -> void:
+func _init(_height) -> void:
+	height = _height
 	split_pts_in = [0, 1]
 	split_pts_out = [0, 1]
 	h_pts_in = [height, height]
