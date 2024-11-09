@@ -1,8 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://vbgylgxm2qvq"]
+[gd_scene load_steps=7 format=3 uid="uid://vbgylgxm2qvq"]
 
 [ext_resource type="Script" path="res://addons/BuildingEditor/scripts/room_editor.gd" id="1_pqaas"]
 [ext_resource type="Resource" uid="uid://dctqm8jdcmjwj" path="res://addons/BuildingEditor/resources/controllableMeshes/baseboard.res" id="3_5agih"]
+[ext_resource type="PackedScene" uid="uid://b1o61glif6eqo" path="res://addons/BuildingEditor/scenes/gizmos/handle.tscn" id="4_5h7i1"]
 [ext_resource type="PackedScene" uid="uid://dq6ipkm5xen5q" path="res://addons/BuildingEditor/scenes/opening/door.tscn" id="4_ue7r6"]
+[ext_resource type="Script" path="res://addons/BuildingEditor/scripts/handle.gd" id="5_qy8gs"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qd7s4"]
 size = Vector3(20, 0.3, 20)
@@ -16,10 +18,14 @@ curr_decoration = ExtResource("3_5agih")
 curr_open_scene = ExtResource("4_ue7r6")
 
 [node name="collision_helper" type="StaticBody3D" parent="."]
-transform = Transform3D(0.999996, 0, 0, 0, 0.999996, 0, 0, 0, 0.999996, 0, -0.149817, 0)
+transform = Transform3D(0.999995, 0, 0, 0, 0.999995, 0, 0, 0, 0.999995, 0, -0.149817, 0)
 
 [node name="collision_helper" type="CollisionShape3D" parent="collision_helper"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
 shape = SubResource("BoxShape3D_qd7s4")
 
 [node name="generated" type="Node3D" parent="."]
+
+[node name="Handle" type="Marker3D" parent="." instance=ExtResource("4_5h7i1")]
+transform = Transform3D(0.999998, 0, 0, 0, 0.999998, 0, 0, 0, 0.999998, -7.24117, 0, -1.99756)
+script = ExtResource("5_qy8gs")

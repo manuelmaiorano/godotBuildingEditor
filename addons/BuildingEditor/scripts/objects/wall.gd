@@ -283,7 +283,8 @@ func set_c1(c1):
 func set_c2(c2):
 	split_pts_in[split_pts_in.size()-1] = c2
 	gen_array_mesh()
-	
+
+####################collision
 func update_collision():
 	if has_csgmesh():
 		return
@@ -304,7 +305,7 @@ func set_collision(disabled):
 	if not disabled:
 		update_collision()
 
-
+#####################boolean
 func has_csgmesh():
 	return has_node("csgmesh")
 
@@ -327,7 +328,7 @@ func get_static_body():
 			return child
 	return null
 
-################################################
+##########################controllable
 
 func translate_vgroup(vgroup, vec: Vector3):
 	var allpts = split_pts_in + split_pts_out

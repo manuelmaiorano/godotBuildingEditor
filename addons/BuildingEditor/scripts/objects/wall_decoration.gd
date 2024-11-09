@@ -62,6 +62,7 @@ func set_c2(_c2):
 	c2 = _c2
 	gen_array_mesh()
 
+#################collision
 func update_collision():
 	if has_csgmesh():
 		return
@@ -75,6 +76,7 @@ func set_collision(disabled):
 	if not disabled:
 		update_collision()
 
+#########################boolean
 func add_opening(_boolean):
 
 	var csgmesh = null
