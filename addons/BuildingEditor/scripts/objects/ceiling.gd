@@ -35,11 +35,9 @@ func update_collision():
 		return
 	var st_body = get_static_body()
 	if st_body == null:
-		print("kjvkhvk")
 		create_trimesh_collision()
 		return
 	st_body.free()
-	print("ewrcevr")
 	create_trimesh_collision()
 
 func set_collision(disabled):
