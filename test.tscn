@@ -1,7 +1,7 @@
 [gd_scene load_steps=7 format=3 uid="uid://vbgylgxm2qvq"]
 
 [ext_resource type="Script" path="res://addons/BuildingEditor/scripts/room_editor.gd" id="1_pqaas"]
-[ext_resource type="Resource" uid="uid://dctqm8jdcmjwj" path="res://addons/BuildingEditor/resources/controllableMeshes/baseboard.res" id="3_5agih"]
+[ext_resource type="Resource" uid="uid://dctqm8jdcmjwj" path="res://addons/BuildingEditor/resources/controllableMeshes/baseboard.res" id="2_mpqdt"]
 [ext_resource type="PackedScene" uid="uid://b1o61glif6eqo" path="res://addons/BuildingEditor/scenes/gizmos/handle.tscn" id="4_5h7i1"]
 [ext_resource type="PackedScene" uid="uid://dq6ipkm5xen5q" path="res://addons/BuildingEditor/scenes/opening/door.tscn" id="4_ue7r6"]
 [ext_resource type="Script" path="res://addons/BuildingEditor/scripts/handle.gd" id="5_qy8gs"]
@@ -14,11 +14,11 @@ transform = Transform3D(1.00122, 0, 0, 0, 1.00122, 0, 0, 0, 1.00122, 0, 0, 0)
 script = ExtResource("1_pqaas")
 width = 0.08
 snap_amount = 0.25
-curr_decoration = ExtResource("3_5agih")
+curr_decoration = ExtResource("2_mpqdt")
 curr_open_scene = ExtResource("4_ue7r6")
 
 [node name="collision_helper" type="StaticBody3D" parent="."]
-transform = Transform3D(0.999995, 0, 0, 0, 0.999995, 0, 0, 0, 0.999995, 0, -0.149817, 0)
+transform = Transform3D(0.999986, 0, 0, 0, 0.999986, 0, 0, 0, 0.999986, 0, -0.149817, 0)
 
 [node name="collision_helper" type="CollisionShape3D" parent="collision_helper"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.15, 0)
@@ -26,6 +26,9 @@ shape = SubResource("BoxShape3D_qd7s4")
 
 [node name="generated" type="Node3D" parent="."]
 
+[node name="@Marker3D@18021" parent="." instance=ExtResource("4_5h7i1")]
+transform = Transform3D(0.999983, 0, 0, 0, 0.999983, 0, 0, 0, 0.999983, -3.99513, 0, -2.24726)
+
 [node name="Handle" type="Marker3D" parent="." instance=ExtResource("4_5h7i1")]
-transform = Transform3D(0.999998, 0, 0, 0, 0.999998, 0, 0, 0, 0.999998, -7.24117, 0, -1.99756)
+transform = Transform3D(0.999998, 0, 0, 0, 0.999998, 0, 0, 0, 0.999998, -2.74665, 0, 4.74421)
 script = ExtResource("5_qy8gs")

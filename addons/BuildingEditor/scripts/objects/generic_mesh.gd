@@ -10,7 +10,7 @@ class_name GenericMesh
 		else:
 			cmesh = null
 
-
+##########################controllable
 func translate_vgroup(vgroup, vec: Vector3):
 	cmesh.translate_vgroup(vgroup, vec)
 	update_mesh()

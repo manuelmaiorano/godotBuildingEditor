@@ -29,7 +29,7 @@ func set_material(mat):
 	material = mat
 	gen_array_mesh(isTop)
 
-
+##############################################collision
 func update_collision():
 	if has_csgmesh():
 		return
@@ -50,7 +50,13 @@ func set_collision(disabled):
 	if not disabled:
 		update_collision()
 
+func get_static_body():
+	for child in get_children():
+		if child is StaticBody3D:
+			return child
+	return null
 
+#################################boolean
 func has_csgmesh():
 	return has_node("csgmesh")
 
@@ -67,9 +73,3 @@ func get_booleans():
 
 func get_csgmesh():
 	return get_node("csgmesh")
-
-func get_static_body():
-	for child in get_children():
-		if child is StaticBody3D:
-			return child
-	return null

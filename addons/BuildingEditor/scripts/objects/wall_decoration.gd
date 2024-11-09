@@ -77,7 +77,7 @@ func set_collision(disabled):
 		update_collision()
 
 #########################boolean
-func add_opening(_boolean):
+func add_opening(_boolean: MovableBooleanShape):
 
 	var csgmesh = null
 	if not has_csgmesh():
@@ -91,6 +91,8 @@ func add_opening(_boolean):
 
 	#get boolean
 	var csg_boolean = _boolean.duplicate()
+	csg_boolean.set_process(false)
+	_boolean.connected.append(csg_boolean)
 	csgmesh.add_child(csg_boolean)
 	csg_boolean.global_position = _boolean.global_position
 	csg_boolean.set_owner(self)

@@ -215,45 +215,6 @@ func add_wall_connection(wall: Wall):
 	
 	wall_connected.append(conn)
 
-func add_opening(opening_scene, len_along_wall):
-
-	#free collision
-	var st_body = get_static_body()
-	if not has_csgmesh() and st_body != null:
-		st_body.free()
-
-	var csgmesh = null
-	if not has_csgmesh():
-		csgmesh = CSGMesh3D.new()
-		add_child(csgmesh)
-		csgmesh.set_owner(get_parent().get_parent())
-		csgmesh.name = "csgmesh"
-		csgmesh.mesh = mesh
-		csgmesh.use_collision = true
-	csgmesh = get_csgmesh()
-
-	#insatnciate
-	var new_instance = opening_scene.instantiate()
-	csgmesh.add_child(new_instance)
-	new_instance.position = Vector3(width/2, 0, len_along_wall)
-	new_instance.set_owner(self)
-
-	#get boolean
-	var _boolean = new_instance.get_node("boolean")
-	var csg_boolean = _boolean.duplicate()
-	csgmesh.add_child(csg_boolean)
-	csg_boolean.global_position = _boolean.global_position
-	csg_boolean.set_owner(self)
-	csg_boolean.show()
-
-	for decorations in decorations_in:
-		for dec in decorations:
-			dec.add_opening(_boolean)
-	
-	for decorations in decorations_out:
-		for dec in decorations:
-			dec.add_opening(_boolean)
-
 func get_start_pt():
 	var vec = Vector3(0, 0, split_pts_out.back())
 	return transform * vec
@@ -313,9 +274,10 @@ func get_booleans():
 	var booleans = []
 	if has_csgmesh():
 		var csgmesh = get_csgmesh()
-		for elem in csgmesh.get_children():
-			if elem is CSGPrimitive3D:
-				booleans.append(elem)
+		for elem in csgmesh.get_children(true):
+			for _elem in elem.get_children(true):
+				if _elem is MovableBooleanShape:
+					booleans.append(_elem)
 
 	return booleans
 
@@ -327,6 +289,48 @@ func get_static_body():
 		if child is StaticBody3D:
 			return child
 	return null
+
+func add_opening(opening_scene, len_along_wall):
+	var owner = get_parent().get_parent()
+	#free collision
+	var st_body = get_static_body()
+	if not has_csgmesh() and st_body != null:
+		st_body.free()
+
+	var csgmesh = null
+	if not has_csgmesh():
+		csgmesh = CSGMesh3D.new()
+		add_child(csgmesh)
+		csgmesh.set_owner(owner)
+		csgmesh.name = "csgmesh"
+		csgmesh.mesh = mesh
+		csgmesh.use_collision = true
+	csgmesh = get_csgmesh()
+
+	#insatnciate
+	var new_instance = opening_scene.instantiate()
+	csgmesh.add_child(new_instance)
+	new_instance.position = Vector3(width/2, 0, len_along_wall)
+	new_instance.set_owner(owner)
+
+	#get boolean
+	var _boolean = new_instance.get_node("boolean")
+	var csg_boolean = _boolean.duplicate()
+	_boolean.set_script(preload("res://addons/BuildingEditor/scripts/booleans_handling/boolean_move.gd"))
+	_boolean.set_process(true)
+	csgmesh.add_child(csg_boolean)
+	csg_boolean.global_position = _boolean.global_position
+	_boolean.connected.append(csg_boolean)
+	csg_boolean.set_owner(owner)
+	csg_boolean.show()
+
+	for decorations in decorations_in:
+		for dec in decorations:
+			dec.add_opening(_boolean)
+	
+	for decorations in decorations_out:
+		for dec in decorations:
+			dec.add_opening(_boolean)
 
 ##########################controllable
 
