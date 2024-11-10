@@ -156,264 +156,293 @@ var current_transform = Transform3D()
 var step_pos = Vector3()
 var current_parent = null
 
+func process_draw(event, raycast_result):
+	if event is InputEventKey:
+		if event.pressed and event.keycode == KEY_C:
+			process_new_point(points[0])
+			
+			#wall connections
+			connect_walls(wall_instances.back(), wall_instances[wall_instances.size()-2])
+			connect_walls(wall_instances.back(), wall_instances[0])
+
+			points.clear()
+			wall_instances.clear()
+			#rooms.append(room)
+			create_floors()
+	if event is InputEventMouse:
+		if !raycast_result:
+			return EditorPlugin.AFTER_GUI_INPUT_PASS
+		var point = raycast_result.position
+		var snapped_point = snap_point(point, true, true)
+		if Input.is_key_pressed(KEY_CTRL):
+			snapped_point = snap_point(point, false, true)
+		var coll_parent = raycast_result.collider.get_parent()
+		if coll_parent is Ceiling or raycast_result.collider.name == "collision_helper":
+			snapped_point.y =  current_floor * height
+		
+		if event is InputEventMouseMotion:
+			update_gizmo(snapped_point)
+			return EditorPlugin.AFTER_GUI_INPUT_PASS
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			if coll_parent is Wall:
+				var wall: Wall = coll_parent
+
+				var data: WallIntercData = get_wall_interc_data(coll_parent, raycast_result.position, true)
+				update_gizmo(data.point_at_bottom)
+				
+				wall.add_split_len(data.len_along_wall, data.is_side_out)
+
+				if points.size() > 0:#closing internal room
+					process_new_point(handle.global_position)
+					
+					#connect walls
+					connect_walls(wall_instances.back(), wall_instances[wall_instances.size()-2])
+					connect_walls(wall_instances.back(), wall)
+					
+					points.clear()
+					wall_instances.clear()
+
+					create_floors()
+					return EditorPlugin.AFTER_GUI_INPUT_STOP
+				else:#starting internal room
+					process_new_point(handle.global_position)
+					wall_instances.append(wall)
+					return EditorPlugin.AFTER_GUI_INPUT_STOP
+					
+			process_new_point(handle.global_position)
+			if wall_instances.size() >= 2:
+				connect_walls(wall_instances.back(), wall_instances[wall_instances.size()-2])
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
+	return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+func process_delete(event, raycast_result):
+	if not event is InputEventMouse:
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if !raycast_result:
+			return EditorPlugin.AFTER_GUI_INPUT_PASS
+		
+		var coll_parent = raycast_result.collider.get_parent()
+		if coll_parent is Wall:
+			delete_wall_connection(coll_parent)
+			create_floors()
+			coll_parent.free()
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+func process_continue(event, raycast_result):
+	if not event is InputEventMouse:
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if !raycast_result:
+			return EditorPlugin.AFTER_GUI_INPUT_PASS
+		
+		var coll_parent = raycast_result.collider.get_parent()
+		if coll_parent is Wall:
+			var point = get_open_end(coll_parent)
+			if point == null:
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
+			update_gizmo(point)
+			wall_instances.append(coll_parent)
+			process_new_point(point)
+			state = EDITOR_STATE.DRAW
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+func process_split(event, raycast_result):
+	if not event is InputEventMouse:
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	if !raycast_result:
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	var point = raycast_result.position
+	var snapped_point = snap_point(point, true, true)
+	if Input.is_key_pressed(KEY_CTRL):
+		snapped_point = snap_point(point, false, true)
+	var coll_parent = raycast_result.collider.get_parent()
+	if coll_parent is Ceiling or raycast_result.collider.name == "collision_helper":
+		snapped_point.y =  current_floor * height
+	
+	if event is InputEventMouseMotion:
+		update_gizmo(snapped_point)
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	elif event is InputEventMouseButton and event.presseda and event.button_index == MOUSE_BUTTON_LEFT:
+		if coll_parent is Wall:
+			var wall: Wall = coll_parent
+
+			var data: WallIntercData = get_wall_interc_data(coll_parent, raycast_result.position, true)
+			update_gizmo(data.point_at_bottom)
+			
+			wall.add_split_len(data.len_along_wall, data.is_side_out)
+			
+		return EditorPlugin.AFTER_GUI_INPUT_STOP
+	return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+func process_paint(event, raycast_result):
+	if material_to_paint == null:
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	if event is InputEventMouse and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if !raycast_result:
+			return EditorPlugin.AFTER_GUI_INPUT_PASS
+		
+		var coll_parent = raycast_result.collider.get_parent()
+		if coll_parent is Wall:
+			var data = get_wall_interc_data(coll_parent, raycast_result.position)
+			coll_parent.set_material(data.len_along_wall, material_to_paint, data.is_side_out)
+
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
+		if coll_parent is Ceiling:
+			coll_parent.set_material(material_to_paint)
+
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+func process_dec(event, raycast_result):
+	if curr_decoration == null:
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	if event is InputEventMouse and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if !raycast_result:
+			return EditorPlugin.AFTER_GUI_INPUT_PASS
+		
+		var coll_parent = raycast_result.collider.get_parent()
+		if coll_parent is Wall:
+			var data = get_wall_interc_data(coll_parent, raycast_result.position)
+			coll_parent.add_decoration(data.len_along_wall, curr_decoration, data.is_side_out)
+
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+func process_opening(event, raycast_result):
+	if curr_open_scene == null:
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	if event is InputEventMouse and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		if !raycast_result:
+			return EditorPlugin.AFTER_GUI_INPUT_PASS
+		
+		var point = raycast_result.position
+		var selected_object = raycast_result.collider
+		var coll_parent = selected_object.get_parent()
+		
+		if coll_parent is Wall:
+			var wall_instance = coll_parent
+
+			var data = get_wall_interc_data(wall_instance, raycast_result.position)
+
+			wall_instance.add_opening(curr_open_scene, data.len_along_wall)
+			return EditorPlugin.AFTER_GUI_INPUT_STOP
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+func process_place(event, raycast_result):
+	if current_asset_scene == null:
+		return EditorPlugin.AFTER_GUI_INPUT_PASS
+	if current_asset == null:
+		current_asset = current_asset_scene.instantiate()
+		add_new_element(current_asset, GROUP_ASSETS % current_floor, current_parent)
+		current_asset.transform = current_transform
+	if event is InputEventKey:
+		if event.pressed and event.keycode == KEY_R and current_asset != null:
+			current_asset.rotate(Vector3.UP, deg_to_rad(45))
+			
+			return EditorPlugin.AFTER_GUI_INPUT_STOP  
+		if event.pressed and event.keycode == KEY_KP_ADD and placement_mode == PLACE_MODE.SNAP:
+			var _step_pos = current_asset.transform.origin - current_transform.origin
+			if _step_pos.length_squared() > 0:
+				step_pos = _step_pos
+
+			current_transform.origin += step_pos
+			current_asset = null
+			return EditorPlugin.AFTER_GUI_INPUT_PASS  
+
+	if event is InputEventMouse:
+		if event is InputEventMouseMotion:
+			if raycast_result == null:
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
+			return move_object_to_place(raycast_result)
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			if !raycast_result:
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
+			var coll_parent = raycast_result.collider.get_parent()
+			if not (coll_parent is Wall) and current_parent != null:
+				current_asset.reparent(get_node("generated"))
+				current_transform = current_asset.global_transform
+				current_asset = null
+				current_parent = null
+				return EditorPlugin.AFTER_GUI_INPUT_STOP 
+			current_transform = current_asset.transform
+			current_asset = null
+			
+			return EditorPlugin.AFTER_GUI_INPUT_STOP 
+	
+	return EditorPlugin.AFTER_GUI_INPUT_PASS
+
+func move_object_to_place(raycast_result):
+	var coll_parent = raycast_result.collider.get_parent()
+	match placement_mode:
+		PLACE_MODE.FURNITURE:
+			if coll_parent is Ceiling or raycast_result.collider.name == "collision_helper":
+				current_asset.global_position = raycast_result.position
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
+		PLACE_MODE.WALL:
+			if coll_parent is Wall:
+				current_asset.global_position = raycast_result.position
+				current_asset.global_transform = current_asset.global_transform.looking_at(raycast_result.position+ raycast_result.normal)
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
+		PLACE_MODE.CEILING_LAMP:
+			if coll_parent is Ceiling:
+				current_asset.global_position = raycast_result.position
+				current_asset.global_position.y += height
+				return EditorPlugin.AFTER_GUI_INPUT_PASS
+		PLACE_MODE.SNAP:
+			current_asset.global_position = raycast_result.position.snapped(Vector3.ONE * snap_amount)
+			if coll_parent is Wall:
+				#TODO: parent to wall, adjust transform
+				var data = get_wall_interc_data(coll_parent, raycast_result.position)
+				current_asset.reparent(coll_parent)
+				current_parent = coll_parent
+				current_asset.transform = Transform3D()
+				current_asset.global_position = raycast_result.position.snapped(Vector3.ONE * snap_amount)
+				if not data.is_side_out:
+					current_asset.transform.origin.x = coll_parent.width
+				else: 
+					current_asset.rotate(Vector3.UP, deg_to_rad(180))
+					current_asset.transform.origin.x = 0
+			return EditorPlugin.AFTER_GUI_INPUT_PASS
+	
+	return EditorPlugin.AFTER_GUI_INPUT_PASS
+
 func process_event(event, raycast_result):
 	match  state:
 		EDITOR_STATE.DRAW:
-			if event is InputEventKey:
-				if event.pressed and event.keycode == KEY_C:
-					process_new_point(points[0])
-					
-					#wall connections
-					connect_walls(wall_instances.back(), wall_instances[wall_instances.size()-2])
-					connect_walls(wall_instances.back(), wall_instances[0])
-
-					points.clear()
-					wall_instances.clear()
-					#rooms.append(room)
-					create_floors()
-			if event is InputEventMouse:
-				if !raycast_result:
-					return EditorPlugin.AFTER_GUI_INPUT_PASS
-				var point = raycast_result.position
-				var snapped_point = snap_point(point, true, true)
-				if Input.is_key_pressed(KEY_CTRL):
-					snapped_point = snap_point(point, false, true)
-				var coll_parent = raycast_result.collider.get_parent()
-				if coll_parent is Ceiling or raycast_result.collider.name == "collision_helper":
-					snapped_point.y =  current_floor * height
-				
-				if event is InputEventMouseMotion:
-					update_gizmo(snapped_point)
-					return EditorPlugin.AFTER_GUI_INPUT_PASS
-				elif event is InputEventMouseButton and event.pressed:
-					if event.button_index == MOUSE_BUTTON_LEFT:
-						if coll_parent is Wall:
-							var wall: Wall = coll_parent
-
-							var data: WallIntercData = get_wall_interc_data(coll_parent, raycast_result.position, true)
-							update_gizmo(data.point_at_bottom)
-							
-							wall.add_split_len(data.len_along_wall, data.is_side_out)
-							if points.size() > 0:
-								process_new_point(handle.global_position)
-								
-								#connect walls
-								connect_walls(wall_instances.back(), wall_instances[wall_instances.size()-2])
-								connect_walls(wall_instances.back(), wall)
-								
-								points.clear()
-								wall_instances.clear()
-
-								create_floors()
-								return EditorPlugin.AFTER_GUI_INPUT_STOP
-							else:
-								process_new_point(handle.global_position)
-								wall_instances.append(wall)
-								return EditorPlugin.AFTER_GUI_INPUT_STOP
-								
-						process_new_point(handle.global_position)
-						if wall_instances.size() >= 2:
-							connect_walls(wall_instances.back(), wall_instances[wall_instances.size()-2])
-						return EditorPlugin.AFTER_GUI_INPUT_STOP
+			return process_draw(event, raycast_result)
 
 		EDITOR_STATE.DELETE:
-			if event is InputEventMouse:
-				if event is InputEventMouseButton and event.pressed:
-					if event.button_index == MOUSE_BUTTON_LEFT:
-						if !raycast_result:
-							return EditorPlugin.AFTER_GUI_INPUT_PASS
-						
-						var coll_parent = raycast_result.collider.get_parent()
-						if coll_parent is Wall:
-							delete_wall_connection(coll_parent)
-							create_floors()
-							coll_parent.free()
-							return EditorPlugin.AFTER_GUI_INPUT_STOP
-						return EditorPlugin.AFTER_GUI_INPUT_PASS
+			return process_delete(event, raycast_result)
 		
 		EDITOR_STATE.CONTINUE:
-			if event is InputEventMouse:
-				if event is InputEventMouseButton and event.pressed:
-					if event.button_index == MOUSE_BUTTON_LEFT:
-						if !raycast_result:
-							return EditorPlugin.AFTER_GUI_INPUT_PASS
-						
-						var coll_parent = raycast_result.collider.get_parent()
-						if coll_parent is Wall:
-							var point = get_open_end(coll_parent)
-							if point == null:
-								return EditorPlugin.AFTER_GUI_INPUT_PASS
-							update_gizmo(point)
-							wall_instances.append(coll_parent)
-							process_new_point(point)
-							state = EDITOR_STATE.DRAW
-							return EditorPlugin.AFTER_GUI_INPUT_STOP
-						return EditorPlugin.AFTER_GUI_INPUT_PASS
+			return process_continue(event, raycast_result)
 
 		EDITOR_STATE.SPLIT:
-			if event is InputEventMouse:
-				if !raycast_result:
-					return EditorPlugin.AFTER_GUI_INPUT_PASS
-				var point = raycast_result.position
-				var snapped_point = snap_point(point, true, true)
-				if Input.is_key_pressed(KEY_CTRL):
-					snapped_point = snap_point(point, false, true)
-				var coll_parent = raycast_result.collider.get_parent()
-				if coll_parent is Ceiling or raycast_result.collider.name == "collision_helper":
-					snapped_point.y =  current_floor * height
-				
-				if event is InputEventMouseMotion:
-					update_gizmo(snapped_point)
-					return EditorPlugin.AFTER_GUI_INPUT_PASS
-				elif event is InputEventMouseButton and event.pressed:
-					if event.button_index == MOUSE_BUTTON_LEFT:
-						if coll_parent is Wall:
-							var wall: Wall = coll_parent
-
-							var data: WallIntercData = get_wall_interc_data(coll_parent, raycast_result.position, true)
-							update_gizmo(data.point_at_bottom)
-							
-							wall.add_split_len(data.len_along_wall, data.is_side_out)
-							
-						return EditorPlugin.AFTER_GUI_INPUT_STOP
+			return process_split(event, raycast_result)
 
 		EDITOR_STATE.PAINT:
-			if material_to_paint == null:
-				return EditorPlugin.AFTER_GUI_INPUT_PASS
-			if event is InputEventMouse:
-				if event is InputEventMouseButton and event.pressed:
-					if event.button_index == MOUSE_BUTTON_LEFT:
-						if !raycast_result:
-							return EditorPlugin.AFTER_GUI_INPUT_PASS
-						
-						var coll_parent = raycast_result.collider.get_parent()
-						if coll_parent is Wall:
-							var data = get_wall_interc_data(coll_parent, raycast_result.position)
-							coll_parent.set_material(data.len_along_wall, material_to_paint, data.is_side_out)
-
-							return EditorPlugin.AFTER_GUI_INPUT_STOP
-						if coll_parent is Ceiling:
-							coll_parent.set_material(material_to_paint)
-
-							return EditorPlugin.AFTER_GUI_INPUT_STOP
-						return EditorPlugin.AFTER_GUI_INPUT_PASS
+			return process_paint(event, raycast_result)
 
 		EDITOR_STATE.DECORATION:
-			if curr_decoration == null:
-				return EditorPlugin.AFTER_GUI_INPUT_PASS
-			if event is InputEventMouse:
-				if event is InputEventMouseButton and event.pressed:
-					if event.button_index == MOUSE_BUTTON_LEFT:
-						if !raycast_result:
-							return EditorPlugin.AFTER_GUI_INPUT_PASS
-						
-						var coll_parent = raycast_result.collider.get_parent()
-						if coll_parent is Wall:
-							var data = get_wall_interc_data(coll_parent, raycast_result.position)
-							coll_parent.add_decoration(data.len_along_wall, curr_decoration, data.is_side_out)
-
-							return EditorPlugin.AFTER_GUI_INPUT_STOP
-						return EditorPlugin.AFTER_GUI_INPUT_PASS
+			return process_dec(event, raycast_result)
 		
 		EDITOR_STATE.ADD_OPENING:
-			if curr_open_scene == null:
-				return EditorPlugin.AFTER_GUI_INPUT_PASS
-			if event is InputEventMouse:
-				if event is InputEventMouseButton and event.pressed:
-					if event.button_index == MOUSE_BUTTON_LEFT:
-						if !raycast_result:
-							return EditorPlugin.AFTER_GUI_INPUT_PASS
-						
-						var point = raycast_result.position
-						var selected_object = raycast_result.collider
-						var coll_parent = selected_object.get_parent()
-						
-						if coll_parent is Wall:
-							var wall_instance = coll_parent
-
-							var data = get_wall_interc_data(wall_instance, raycast_result.position)
-
-							wall_instance.add_opening(curr_open_scene, data.len_along_wall)
-							return EditorPlugin.AFTER_GUI_INPUT_STOP
-						return EditorPlugin.AFTER_GUI_INPUT_PASS
+			return process_opening(event, raycast_result)
 
 		EDITOR_STATE.PLACE:
-			if current_asset_scene == null:
-				return EditorPlugin.AFTER_GUI_INPUT_PASS
-			if current_asset == null:
-				current_asset = current_asset_scene.instantiate()
-				add_new_element(current_asset, GROUP_ASSETS % current_floor, current_parent)
-				current_asset.transform = current_transform
-			if event is InputEventKey:
-				if event.pressed and event.keycode == KEY_R:
-					if current_asset != null:
-						current_asset.rotate(Vector3.UP, deg_to_rad(45))
-						
-						return EditorPlugin.AFTER_GUI_INPUT_STOP  
-				if event.pressed and event.keycode == KEY_KP_ADD:
-					if placement_mode == PLACE_MODE.SNAP:
-						var _step_pos = current_asset.transform.origin - current_transform.origin
-						if _step_pos.length_squared() > 0:
-							step_pos = _step_pos
-
-						current_transform.origin += step_pos
-						current_asset = null
-						return EditorPlugin.AFTER_GUI_INPUT_PASS  
-
-			if event is InputEventMouse:
-				if event is InputEventMouseMotion:
-					if raycast_result == null:
-						return EditorPlugin.AFTER_GUI_INPUT_PASS
-					var coll_parent = raycast_result.collider.get_parent()
-					match placement_mode:
-						PLACE_MODE.FURNITURE:
-							if coll_parent is Ceiling or raycast_result.collider.name == "collision_helper":
-								current_asset.global_position = raycast_result.position
-								return EditorPlugin.AFTER_GUI_INPUT_PASS
-						PLACE_MODE.WALL:
-							if coll_parent is Wall:
-								current_asset.global_position = raycast_result.position
-								current_asset.global_transform = current_asset.global_transform.looking_at(raycast_result.position+ raycast_result.normal)
-								return EditorPlugin.AFTER_GUI_INPUT_PASS
-						PLACE_MODE.CEILING_LAMP:
-							if coll_parent is Ceiling:
-								current_asset.global_position = raycast_result.position
-								current_asset.global_position.y += height
-								return EditorPlugin.AFTER_GUI_INPUT_PASS
-						PLACE_MODE.SNAP:
-							current_asset.global_position = raycast_result.position.snapped(Vector3.ONE * snap_amount)
-							if coll_parent is Wall:
-								#TODO: parent to wall, adjust transform
-								var data = get_wall_interc_data(coll_parent, raycast_result.position)
-								current_asset.reparent(coll_parent)
-								current_parent = coll_parent
-								current_asset.transform = Transform3D()
-								current_asset.global_position = raycast_result.position.snapped(Vector3.ONE * snap_amount)
-								if not data.is_side_out:
-									current_asset.transform.origin.x = coll_parent.width
-								else: 
-									current_asset.rotate(Vector3.UP, deg_to_rad(180))
-									current_asset.transform.origin.x = 0
-							return EditorPlugin.AFTER_GUI_INPUT_PASS
-				if event is InputEventMouseButton and event.pressed:
-					if event.button_index == MOUSE_BUTTON_LEFT:
-						if !raycast_result:
-							return EditorPlugin.AFTER_GUI_INPUT_PASS
-						var coll_parent = raycast_result.collider.get_parent()
-						if not (coll_parent is Wall) and current_parent != null:
-							current_asset.reparent(get_node("generated"))
-							current_transform = current_asset.global_transform
-							current_asset = null
-							current_parent = null
-							return EditorPlugin.AFTER_GUI_INPUT_STOP 
-						current_transform = current_asset.transform
-						current_asset = null
-						
-						return EditorPlugin.AFTER_GUI_INPUT_STOP               
+			return process_place(event, raycast_result)       
 			
 		_:
 			return EditorPlugin.AFTER_GUI_INPUT_PASS
-	return EditorPlugin.AFTER_GUI_INPUT_PASS
+	
 			
 func update_gizmo(point):
 	if !handle:
