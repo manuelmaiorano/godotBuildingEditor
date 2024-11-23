@@ -29,7 +29,7 @@ var floor_width = 0.3
 		if not floors.has(value):
 			floors.append(value)
 		current_floor = value
-		get_node("collision_helper").global_position.y = value * height - floor_width/2
+		get_node("collision_helper").global_position.y = value * height #- floor_width/2
 		
 		hide_upper_floors(value)
 		show_lower_floors(value)
@@ -139,6 +139,7 @@ func get_wall_interc_data(wall, raycast_pos, snap_to_grid = false):
 	var data = WallIntercData.new()
 
 	var tr = wall.transform
+	print("wall_position: %f" % tr.origin.y)
 	var rayc_in_tr = tr.inverse() * raycast_pos
 	if snap_to_grid:
 		var snapped = rayc_in_tr.snapped(Vector3.ONE * snap_amount)
@@ -260,6 +261,7 @@ func process_split(event, raycast_result):
 	var snapped_point = snap_point(point, true, true)
 	if Input.is_key_pressed(KEY_CTRL):
 		snapped_point = snap_point(point, false, true)
+
 	var coll_parent = raycast_result.collider.get_parent()
 	if coll_parent is Ceiling or raycast_result.collider.name == "collision_helper":
 		snapped_point.y =  current_floor * height
@@ -267,7 +269,7 @@ func process_split(event, raycast_result):
 	if event is InputEventMouseMotion:
 		update_gizmo(snapped_point)
 		return EditorPlugin.AFTER_GUI_INPUT_PASS
-	elif event is InputEventMouseButton and event.presseda and event.button_index == MOUSE_BUTTON_LEFT:
+	elif event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		if coll_parent is Wall:
 			var wall: Wall = coll_parent
 
@@ -571,7 +573,7 @@ func show_lower_floors(number):
 		
 
 func show_hide_ceiling(number, show):
-	for elem in get_tree().get_nodes_in_group(GROUP_CEILING % number) + get_tree().get_nodes_in_group(GROUP_FLOOR % number):
+	for elem in get_tree().get_nodes_in_group(GROUP_CEILING % number): #+ get_tree().get_nodes_in_group(GROUP_FLOOR % number):
 		if not show:
 			elem.hide()
 			elem.set_collision(true)

@@ -15,6 +15,7 @@ func _init(_points, _isTop) -> void:
 	points = _points
 	isTop = _isTop
 	material = StandardMaterial3D.new()
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	gen_array_mesh(isTop)
 
 func gen_array_mesh(isTop):
