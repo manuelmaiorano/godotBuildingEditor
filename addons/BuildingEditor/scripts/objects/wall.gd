@@ -365,7 +365,13 @@ func get_handle_point(vg_name):
 		pt = Vector3(0, h_pts_out[idx], split_pts_out[idx])
 	return pt
 
-
 func get_handle_name(handle_id):
 	return str(handle_id)
+
+func get_drag_segment(vg_name):
+	var segment = []
+	var pt = global_transform * get_handle_point(vg_name)
+	segment.append(Vector3(pt.x, 0.0, pt.z))
+	segment.append(Vector3(pt.x, 4096, pt.z))
+	return segment
 	

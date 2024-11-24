@@ -171,4 +171,4 @@ func _run():
 	inner_polygon = [Vector2(0, 0), Vector2(0, 1), Vector2(1, 1), Vector2(1, 0)]
 
 	var result = is_polygon_inside(outer_polygon, inner_polygon)
-	print(result)  # Output: True if inner polygon is inside the outer polygon
+	#print(result)  # Output: True if inner polygon is inside the outer polygon

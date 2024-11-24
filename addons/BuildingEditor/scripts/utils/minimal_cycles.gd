@@ -108,7 +108,7 @@ func _run():
 		if already_in_minimal:
 			continue
 		minimal_cycles.append(cycle)
-	print(minimal_cycles)
+	#print(minimal_cycles)
 	
 	#var fin_cycles = []
 	#for cycle in minimal_cycles:

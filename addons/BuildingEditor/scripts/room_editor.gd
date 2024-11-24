@@ -139,7 +139,7 @@ func get_wall_interc_data(wall, raycast_pos, snap_to_grid = false):
 	var data = WallIntercData.new()
 
 	var tr = wall.transform
-	print("wall_position: %f" % tr.origin.y)
+	#print("wall_position: %f" % tr.origin.y)
 	var rayc_in_tr = tr.inverse() * raycast_pos
 	if snap_to_grid:
 		var snapped = rayc_in_tr.snapped(Vector3.ONE * snap_amount)
@@ -506,13 +506,12 @@ func create_floor(points):
 	
 	return floor
 
-
 func create_ceiling(points):
 	var vertices = PackedVector3Array()
 	for point in points:
-		vertices.append(Vector3(point))
+		vertices.append(Vector3(point.x, point.y - 0.2, point.z))
 
-	var ceiling = Ceiling.new(points, true)
+	var ceiling = Ceiling.new(vertices, true)
 	add_new_element(ceiling, GROUP_CEILING % current_floor)
 	return ceiling
 
@@ -643,9 +642,6 @@ func get_rooms():
 		var skip = false
 		for point in all_points:
 			if GEOMETRY_UTILS.is_point_in_polygon(Vector2(point.x, point.z), polygon):
-				print(Vector2(point.x, point.z))
-				print("inside")
-				print(polygon)
 				skip = true
 				break
 		if skip:
@@ -665,8 +661,6 @@ func get_rooms():
 				connected_pts[p2] = []
 			connected_pts[p2].append(p1)
 
-	print("conn")
-	print(connected_pts)
 	var filtered_point_sets1 = []
 	for point_set in filtered_point_sets:
 		var skip = false
@@ -699,12 +693,6 @@ func get_rooms():
 			continue
 		
 		filtered_point_sets1.append(point_set)
-				
-	print("filtered")
-	print(filtered_point_sets)
-	print(point_sets.size())
-	print(filtered_point_sets.size())
-	print(filtered_point_sets1.size())
 
 	return filtered_point_sets
 

@@ -1,7 +1,7 @@
 extends Node
 class_name CeilingCreator
 
-static  func create_from_vertices(vertices: PackedVector3Array, isTop=true):
+static  func create_from_vertices(vertices: PackedVector3Array, h_offsets: Array[float], isTop=true):
 	var height = vertices[0].y
 	var points2d = PackedVector2Array();
 	for vertex in vertices:
@@ -9,7 +9,7 @@ static  func create_from_vertices(vertices: PackedVector3Array, isTop=true):
 
 	var triangles = Triangulation.triangulate(points2d)
 	
-	var verts = vertices
+	var verts = vertices.duplicate()
 	var uvs = PackedVector2Array()
 	for idx in verts.size():
 		uvs.append(Vector2(verts[idx].x, verts[idx].z))
@@ -27,6 +27,10 @@ static  func create_from_vertices(vertices: PackedVector3Array, isTop=true):
 			for idx in verts.size():
 				if verts[idx].is_equal_approx(point3d):
 					indices.append(idx)
+
+	for idx in verts.size():
+		verts[idx].y += h_offsets[idx]
+	
 	#top
 	var mesh = ArrayMesh.new()
 	if not isTop:
@@ -76,8 +80,8 @@ static  func create_from_vertices(vertices: PackedVector3Array, isTop=true):
 		surface_array_bottom.resize(Mesh.ARRAY_MAX)
 		var bottom_vertices = PackedVector3Array()
 		var bottom_indices = PackedInt32Array()
-		for vert in vertices:
-			bottom_vertices.append(Vector3(vert.x, vert.y - 0.2, vert.z))
+		for vert in verts:
+			bottom_vertices.append(Vector3(vert.x, vert.y, vert.z))
 		for idx in indices.size()/3:
 			bottom_indices.append(indices[idx*3+2])
 			bottom_indices.append(indices[idx*3+1])

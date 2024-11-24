@@ -99,7 +99,7 @@ func _run():
 		7: [5]
 	}
 	
-	print(find_cycles(graph))
+	#print(find_cycles(graph))
 	
 static func same_elem(arr1, arr2):
 	for v in arr1:

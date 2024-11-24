@@ -51,7 +51,7 @@ static func triangulate(polygon: PackedVector2Array):
 			if angle < 0:
 				angle += 360
 			
-			print("angle %d" % angle)
+			#print("angle %d" % angle)
 			if angle >= 180:
 				# Skip because angle is greater than 180
 				continue
@@ -79,6 +79,6 @@ static func triangulate(polygon: PackedVector2Array):
 					# Increment triangles finded
 					triangles_finded += 1
 					break
-	print("triangles")
-	print(final_triangles)
+	#print("triangles")
+	#print(final_triangles)
 	return final_triangles

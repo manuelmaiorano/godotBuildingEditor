@@ -6,6 +6,7 @@ class_name Ceiling
 
 var material
 var points = []
+var h_offsets: Array[float] = []
 
 
 var csgmesh = null
@@ -14,12 +15,15 @@ var isTop = false
 func _init(_points, _isTop) -> void:
 	points = _points
 	isTop = _isTop
+	for _i in points.size():
+		h_offsets.append(0.0)
 	material = StandardMaterial3D.new()
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	gen_array_mesh(isTop)
+	gen_array_mesh()
 
-func gen_array_mesh(isTop):
-	mesh = CeilingCreator.create_from_vertices(points, isTop)
+func gen_array_mesh():
+	mesh = CeilingCreator.create_from_vertices(points, 
+		h_offsets, isTop)
 
 	mesh.surface_set_material(0, material)
 	update_collision()
@@ -28,7 +32,7 @@ func gen_array_mesh(isTop):
 
 func set_material(mat):
 	material = mat
-	gen_array_mesh(isTop)
+	gen_array_mesh()
 
 ##############################################collision
 func update_collision():
@@ -74,3 +78,32 @@ func get_booleans():
 
 func get_csgmesh():
 	return get_node("csgmesh")
+
+##########################controllable
+
+func translate_vgroup(vgroup, vec: Vector3):
+	h_offsets[int(vgroup)] += vec.y
+	gen_array_mesh()
+
+func get_vgroups():
+	var vgs = []
+	for idx in points.size():
+		var vg = VertexGroup.new()
+		vg.name = str(idx)
+		vgs.append(vg)
+	return vgs
+
+func get_handle_point(vg_name):
+	var point = points[int(vg_name)] + Vector3(0, h_offsets[int(vg_name)], 0)
+	return point
+
+func get_handle_name(handle_id):
+	return str(handle_id)
+
+func get_drag_segment(vg_name):
+	var segment = []
+	var pt = points[int(vg_name)]
+	segment.append(Vector3(pt.x, 0.0, pt.z))
+	segment.append(Vector3(pt.x, 4096, pt.z))
+	return segment
+	
